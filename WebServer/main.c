@@ -83,6 +83,9 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam)
         i++; j++;
     }
     url[i] = '\0';
+    if (strcmp(url, "\\") == 0) {
+        strcpy(url, "\\index.html");
+    }
     printf("url: %s\n", url);
 
     // 将请求的url路径转换为本地路径
