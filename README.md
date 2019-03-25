@@ -22,5 +22,11 @@ The following is the illustration of the interactions between server and client:
    ```
 3. When the Web Browser receives the requested Web Page, it will interpret the content and display on the screen.
 
+## File Path
+   For CLion Project: 
+   ```
+   ...\Internet_WWW_Assignment\WebServer\cmake-build-debug\
+   ```
+
 ## Reference
 C语言实现简单Web服务器: https://www.jianshu.com/p/592b631e1ff1
