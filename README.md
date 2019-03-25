@@ -38,5 +38,6 @@ The following is the illustration of the interactions between server and client:
    ```
 
 ## Reference
+   - [HTTP/1.1](https://www.w3.org/Protocols/HTTP/1.1/rfc2616bis/draft-lafon-rfc2616bis-03.html)
    - [C语言实现简单Web服务器](https://www.jianshu.com/p/592b631e1ff1)
    - [Linux C小项目 —— 简单的web服务器](https://blog.csdn.net/trb331617/article/details/79264933)
