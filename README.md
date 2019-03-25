@@ -39,3 +39,4 @@ The following is the illustration of the interactions between server and client:
 
 ## Reference
    - [C语言实现简单Web服务器](https://www.jianshu.com/p/592b631e1ff1)
+   - [Linux C小项目 —— 简单的web服务器](https://blog.csdn.net/trb331617/article/details/79264933)
