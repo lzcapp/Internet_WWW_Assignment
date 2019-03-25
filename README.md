@@ -38,4 +38,4 @@ The following is the illustration of the interactions between server and client:
    ```
 
 ## Reference
-   - C语言实现简单Web服务器: https://www.jianshu.com/p/592b631e1ff1
+   - [C语言实现简单Web服务器](https://www.jianshu.com/p/592b631e1ff1)
