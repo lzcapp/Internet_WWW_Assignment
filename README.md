@@ -32,6 +32,8 @@ The following is the illustration of the interactions between server and client:
    - [ ] IP filtering
    - [ ] Dynamic advertisement
    - [ ] VIP
+ - [ ] Cross-platform:
+   - [ ] Raspberry Pi
 
 ## Building Enviornment 
    - [Jetbrains CLion](https://www.jetbrains.com/clion/)
