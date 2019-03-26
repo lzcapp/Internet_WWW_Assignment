@@ -8,27 +8,27 @@ concurrently from different Web Browsers. The Web document stored in the Web
 Server could be HTML file, image or any other resources. The sample programs
 (namely, “server.cpp” and “client.cpp”) can be downloaded from the course Web site.
 The following is the illustration of the interactions between server and client:
-[ ] User input the IP address of the Web Server in the address bar of a Web Browser. 
-   The Web Browser will make a request to the Web Server as follows:
-   ```
-   GET /index.html HTTP/1.0
-   ```
-[ ] The Web Server should accept the request, and give a proper response to the Web Browser as follows:
-   ```
-   HTTP/1.0 200 OK
-   Content-Type: TEXT/HMTL
-   Content-Length: 100
-   ...
-   ```
-3. When the Web Browser receives the requested Web Page, it will interpret the content and display on the screen.
-4. Extra features:
-   1. Black list / White list
-   2. Admin edit page
-   3. Change server directory path and port number
-   4. Password for specified directory
-   5. IP filtering
-   6. Dynamic advertisement
-   7. VIP
+- [ ] User input the IP address of the Web Server in the address bar of a Web Browser. 
+      The Web Browser will make a request to the Web Server as follows:
+      ```
+      GET /index.html HTTP/1.0
+      ```
+- [ ] The Web Server should accept the request, and give a proper response to the Web Browser as follows:
+      ```
+      HTTP/1.0 200 OK
+      Content-Type: TEXT/HMTL
+      Content-Length: 100
+      ...
+      ```
+- [ ] When the Web Browser receives the requested Web Page, it will interpret the content and display on the screen.
+- [ ] Extra features:
+   - [ ] Black list / White list
+   - [ ] Admin edit page
+   - [ ] Change server directory path and port number
+   - [ ] Password for specified directory
+   - [ ] IP filtering
+   - [ ] Dynamic advertisement
+   - [ ] VIP
 
 ## Building Enviornment 
    - [Jetbrains CLion](https://www.jetbrains.com/clion/)
