@@ -66,6 +66,7 @@
 # cmake-build-*/
 CMakeFiles/
 WebServer.cbp
+CMakeCache.txt
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
