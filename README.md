@@ -22,6 +22,11 @@ The following is the illustration of the interactions between server and client:
    ```
 3. When the Web Browser receives the requested Web Page, it will interpret the content and display on the screen.
 
+## Building Enviornment 
+   - [Jetbrains CLion](https://www.jetbrains.com/clion/)
+      - [JetBrains学生免费授权计划](https://www.jetbrains.com/zh/student/)
+   - [MinGW-W64 GCC-8.1.0 (x86_64-8.1.0-posix-seh-rt_v6-rev0)](http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download)
+
 ## CMake File
    ```
    cmake_minimum_required(VERSION 3.13)
