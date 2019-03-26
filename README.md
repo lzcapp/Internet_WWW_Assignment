@@ -9,17 +9,17 @@ Server could be HTML file, image or any other resources. The sample programs
 (namely, “server.cpp” and “client.cpp”) can be downloaded from the course Web site.
 The following is the illustration of the interactions between server and client:
 - [x] User input the IP address of the Web Server in the address bar of a Web Browser. 
-      The Web Browser will make a request to the Web Server as follows: <br/>
-      ```
-      GET /index.html HTTP/1.0
-      ```
+  The Web Browser will make a request to the Web Server as follows: <br/>
+   ```
+   GET /index.html HTTP/1.0
+   ```
 - [x] The Web Server should accept the request, and give a proper response to the Web Browser as follows: <br/>
-      ```html
-      HTTP/1.0 200 OK
-      Content-Type: TEXT/HMTL
-      Content-Length: 100
-      ...
-      ```
+   ``` 
+   HTTP/1.0 200 OK
+   Content-Type: TEXT/HMTL
+   Content-Length: 100
+   ...
+   ``` 
 - [ ] When the Web Browser receives the requested Web Page, it will interpret the content and display on the screen.
    - [x] HTML
    - [ ] Image
