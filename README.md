@@ -35,6 +35,9 @@ The following is the illustration of the interactions between server and client:
  - [ ] Cross-platform:
    - [ ] Raspberry Pi
 
+## Method for Request and Status Code for Respond
+   - [Status Code](./wiki/Status-Code-for-Response)
+
 ## Building Enviornment 
    - [Jetbrains CLion](https://www.jetbrains.com/clion/)
       - [JetBrains学生免费授权计划](https://www.jetbrains.com/zh/student/)
