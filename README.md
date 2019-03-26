@@ -64,3 +64,5 @@ The following is the illustration of the interactions between server and client:
    - [ip(7) - Linux manual page](http://man7.org/linux/man-pages/man7/ip.7.html)
    - [C语言实现简单Web服务器](https://www.jianshu.com/p/592b631e1ff1)
    - [Linux C小项目 —— 简单的web服务器](https://blog.csdn.net/trb331617/article/details/79264933)
+   - [C语言开发Linux下web服务器](https://blog.csdn.net/yueguanghaidao/article/details/8450938)
+      - [Linux-C-Web-Server](https://github.com/Skycrab/Linux-C-Web-Server)
