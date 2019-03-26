@@ -1,14 +1,21 @@
 // Suppress the warning message C4996, function superseded by newer functionality
-// #pragma warning(disable:4996)
+#pragma clang diagnostic ignored "-Wnonportable-include-path"
+#pragma warning(disable:4996)
+
+// Places a (static) library-search record in the object file
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma comment(lib, "Ws2_32.lib")
 
 #include <winsock2.h>
+#include <winsock.h>
+/*
+#include <winsock2.h>
+*/
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
 #include <direct.h>
-
-// Places a (static) library-search record in the object file
-#pragma comment(lib, "Ws2_32.lib")
 
 // Define macros for our web server
 #define DEFAULT_PORT 8080
