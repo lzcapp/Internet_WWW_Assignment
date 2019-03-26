@@ -14,7 +14,7 @@ The following is the illustration of the interactions between server and client:
       GET /index.html HTTP/1.0
       ```
 - [x] The Web Server should accept the request, and give a proper response to the Web Browser as follows: <br/>
-      ```
+      ```html
       HTTP/1.0 200 OK
       Content-Type: TEXT/HMTL
       Content-Length: 100
