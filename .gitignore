@@ -65,6 +65,7 @@
 # CMake
 # cmake-build-*/
 CMakeFiles/
+WebServer/cmake-build-debug/WebServer.cbp
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
@@ -477,4 +478,3 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
-WebServer/cmake-build-debug/WebServer.cbp
