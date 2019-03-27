@@ -51,7 +51,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /tmp/tmp.KQM3zGX6zA
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /tmp/tmp.KQM3zGX6zA/cmake-build-debug
+CMAKE_BINARY_DIR = /tmp/tmp.KQM3zGX6zA/cmake-build-debug-remote-host
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /tmp/tmp.KQM3zGX6zA/cmake-build-debug/CMakeFiles /tmp/tmp.KQM3zGX6zA/cmake-build-debug/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /tmp/tmp.KQM3zGX6zA/cmake-build-debug-remote-host/CMakeFiles /tmp/tmp.KQM3zGX6zA/cmake-build-debug-remote-host/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /tmp/tmp.KQM3zGX6zA/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /tmp/tmp.KQM3zGX6zA/cmake-build-debug-remote-host/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -110,46 +110,6 @@ depend:
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named WebServer_RaspPi
-
-# Build rule for target.
-WebServer_RaspPi: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 WebServer_RaspPi
-.PHONY : WebServer_RaspPi
-
-# fast build rule for target.
-WebServer_RaspPi/fast:
-	$(MAKE) -f CMakeFiles/WebServer_RaspPi.dir/build.make CMakeFiles/WebServer_RaspPi.dir/build
-.PHONY : WebServer_RaspPi/fast
-
-main.o: main.c.o
-
-.PHONY : main.o
-
-# target to build an object file
-main.c.o:
-	$(MAKE) -f CMakeFiles/WebServer_RaspPi.dir/build.make CMakeFiles/WebServer_RaspPi.dir/main.c.o
-.PHONY : main.c.o
-
-main.i: main.c.i
-
-.PHONY : main.i
-
-# target to preprocess a source file
-main.c.i:
-	$(MAKE) -f CMakeFiles/WebServer_RaspPi.dir/build.make CMakeFiles/WebServer_RaspPi.dir/main.c.i
-.PHONY : main.c.i
-
-main.s: main.c.s
-
-.PHONY : main.s
-
-# target to generate assembly for a file
-main.c.s:
-	$(MAKE) -f CMakeFiles/WebServer_RaspPi.dir/build.make CMakeFiles/WebServer_RaspPi.dir/main.c.s
-.PHONY : main.c.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -158,10 +118,6 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... WebServer_RaspPi"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
 .PHONY : help
 
 
