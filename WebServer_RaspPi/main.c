@@ -48,7 +48,6 @@ int main(void) {
     act.sa_flags = 0;
     sigaction(SIGCHLD, &act, NULL);
 
-
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
     bzero(&servaddr, sizeof(servaddr));
@@ -85,7 +84,7 @@ int main(void) {
             http_send(connfd, "hello world!");
             close(connfd);
             exit(0);
-        } else {  // parent
+        } else { // parent
             close(connfd);
         }
     }
