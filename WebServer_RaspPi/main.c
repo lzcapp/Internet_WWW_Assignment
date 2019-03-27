@@ -9,7 +9,13 @@
 #include <ctype.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <time.h>
 
+#define TEMP_PATH "/sys/class/thermal/thermal_zone0/temp"
+#define MAX_SIZE 32
 #define BUFF_SIZE 1024
 #define SERV_PORT 8080
 
@@ -81,7 +87,46 @@ int main(void) {
             printf("received from %s at PORT %d\n", inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
                    ntohs(cliaddr.sin_port));
             fputs(buf, stdout);
-            http_send(connfd, "hello world!");
+            int fd;
+            double temp = 0;
+            char tempbuf[MAX_SIZE];
+            fd = open(TEMP_PATH, O_RDONLY);
+            if (fd >= 0) {
+                if (read(fd, tempbuf, MAX_SIZE) < 0) {
+                    temp = -1;
+                }
+            }
+            temp = atoi(tempbuf) / 1000.0;
+            char response[80];
+            char tempstr[20];
+            strcat(response, "hello world!");
+            sprintf(tempstr, "%.2f", temp);
+            strcat(response, tempstr);
+            char *cur_time = (char *)malloc(21*sizeof(char));
+            time_t current_time;
+            struct tm* now_time;
+            time(&current_time);
+            now_time = localtime(&current_time);
+            char Year[6] = {0};
+            char Month[4] = {0};
+            char Day[4] = {0};
+            char Hour[4] = {0};
+            char Min[4] = {0};
+            char Sec[4] = {0};
+            strftime(Year, sizeof(Year), "%Y-", now_time);
+            strftime(Month, sizeof(Month), "%m-", now_time);
+            strftime(Day, sizeof(Day), "%d ", now_time);
+            strftime(Hour, sizeof(Hour), "%H:", now_time);
+            strftime(Min, sizeof(Min), "%M:", now_time);
+            strftime(Sec, sizeof(Sec), "%S", now_time);
+            strncat(cur_time, Year, 5);
+            strncat(cur_time, Month, 3);
+            strncat(cur_time, Day, 3);
+            strncat(cur_time, Hour, 3);
+            strncat(cur_time, Min, 3);
+            strncat(cur_time, Sec, 3);
+            strcat(response, cur_time);
+            http_send(connfd, response);
             close(connfd);
             exit(0);
         } else { // parent
