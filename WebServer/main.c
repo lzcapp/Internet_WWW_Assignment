@@ -9,9 +9,7 @@
 
 #include <winsock2.h>
 #include <winsock.h>
-/*
-#include <winsock2.h>
-*/
+
 #include <time.h>
 #include <stdio.h>
 #include <string.h>

@@ -13,31 +13,7 @@
 #define BUFF_SIZE 1024
 #define SERV_PORT 80
 
-void perr_exit(const char *s);
-
-int Accept(int fd, struct sockaddr *sa, socklen_t *salenptr);
-
-void Bind(int fd, const struct sockaddr *sa, socklen_t salen);
-
-void Connect(int fd, struct sockaddr *sa, socklen_t salen);
-
-void Listen(int fd, int backlog);
-
-int Socket(int family, int type, int protocol);
-
-ssize_t Read(int fd, void *ptr, size_t nbytes);
-
-ssize_t Write(int fd, void *ptr, size_t nbytes);
-
-ssize_t Readn(int fd, void *vptr, size_t n);
-
-ssize_t Writen(int fd, const void *vptr, size_t n);
-
-ssize_t Readline(int fd, void *vptr, size_t maxlen);
-
-void Close(int fd);
-
-void handle_sig(int sig) {
+void handle_sig() {
     printf("child exit\n");
     wait(NULL);
 }
@@ -55,7 +31,7 @@ void http_send(int sock_client, char *content) {
     sprintf(HTTP_HEADER, http_res_tmpl, len, "text/html");
     len = sprintf(HTTP_INFO, "%s%s", HTTP_HEADER, content);
 
-    Write(sock_client, HTTP_INFO, len);
+    write(sock_client, HTTP_INFO, (size_t) len);
 }
 
 int main(void) {
@@ -73,7 +49,7 @@ int main(void) {
     sigaction(SIGCHLD, &act, NULL);
 
 
-    listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
@@ -83,22 +59,22 @@ int main(void) {
     int opt = 1;
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-    Bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
-    Listen(listenfd, 20);
+    bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
+    listen(listenfd, 20);
 
     printf("Accepting connections ...\n");
     while (1) {
         cliaddr_len = sizeof(cliaddr);
-        connfd = Accept(listenfd, (struct sockaddr *) &cliaddr, &cliaddr_len);
+        connfd = accept(listenfd, (struct sockaddr *) &cliaddr, &cliaddr_len);
 
         n = fork();
         if (n == -1) {
             perror("call to fork");
             exit(1);
         } else if (n == 0) { // child
-            Close(listenfd);
+            close(listenfd);
 
-            n = Read(connfd, buf, BUFF_SIZE);
+            n = read(connfd, buf, BUFF_SIZE);
             if (n == 0) {
                 printf("the other side has been closed.\n");
                 break;
@@ -107,10 +83,10 @@ int main(void) {
                    ntohs(cliaddr.sin_port));
             fputs(buf, stdout);
             http_send(connfd, "hello world!");
-            Close(connfd);
+            close(connfd);
             exit(0);
         } else {  // parent
-            Close(connfd);
+            close(connfd);
         }
     }
 }
