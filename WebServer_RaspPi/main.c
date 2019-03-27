@@ -99,9 +99,10 @@ int main(void) {
             temp = atoi(tempbuf) / 1000.0;
             char response[80];
             char tempstr[20];
-            strcat(response, "hello world!");
+            strcat(response, "hello, world!\nTemperature: ");
             sprintf(tempstr, "%.2f", temp);
             strcat(response, tempstr);
+            strcat(response, "\nTime: ");
             char *cur_time = (char *)malloc(21*sizeof(char));
             time_t current_time;
             struct tm* now_time;
