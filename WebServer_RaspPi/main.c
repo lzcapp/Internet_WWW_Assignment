@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 
 #define BUFF_SIZE 1024
-#define SERV_PORT 80
+#define SERV_PORT 8080
 
 void handle_sig() {
     printf("child exit\n");
@@ -19,7 +19,7 @@ void handle_sig() {
 }
 
 char *http_res_tmpl = "HTTP/1.1 200 OK\r\n"
-                      "Server: Cleey's Server V1.0\r\n"
+                      "Connection: keep-alive\r\n"
                       "Accept-Ranges: bytes\r\n"
                       "Content-Length: %d\r\n"
                       "Connection: close\r\n"
