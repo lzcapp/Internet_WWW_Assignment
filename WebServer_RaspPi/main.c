@@ -34,8 +34,8 @@ char *http_res_tmpl = "HTTP/1.1 200 OK\r\n"
 void http_send(int sock_client, char *content) {
     char HTTP_HEADER[BUFF_SIZE], HTTP_INFO[BUFF_SIZE];
     int len = strlen(content);
-    sprintf(HTTP_HEADER, http_res_tmpl, len, "text/html");
-    len = sprintf(HTTP_INFO, "%s%s", HTTP_HEADER, content);
+    sprintf(HTTP_HEADER, http_res_tmpl, len, "text/html; charset=utf-8");
+    len = sprintf(HTTP_INFO, "%s\r\n\r\n%s", HTTP_HEADER, content);
 
     write(sock_client, HTTP_INFO, (size_t) len);
 }
@@ -96,13 +96,17 @@ int main(void) {
                     temp = -1;
                 }
             }
-            temp = atoi(tempbuf) / 1000.0;
-            char response[80];
+            temp = atoi(tempbuf) / 1000.0; // NOLINT(cert-err34-c)
+            char response[1024];
             char tempstr[20];
-            strcat(response, "hello, world!\nTemperature: ");
+            strcat(response, "<html lang='en'><head><title>Alloha from RaspPi</title><meta charset=\"utf-8\"/></head>");
+	    strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
+	    strcat(response, "<h2>This is a Raspberry Pi @Laurence's Dorm.</h2>\r\n");
+	    strcat(response, "<h3>&#x1f321;&nbsp;Temperature: ");
             sprintf(tempstr, "%.2f", temp);
             strcat(response, tempstr);
-            strcat(response, "\nTime: ");
+            strcat(response, "°C</h3>\r\n<h3>");
+	    strcat(response, "&#x231a; \t Time: ");
             char *cur_time = (char *)malloc(21*sizeof(char));
             time_t current_time;
             struct tm* now_time;
@@ -127,6 +131,7 @@ int main(void) {
             strncat(cur_time, Min, 3);
             strncat(cur_time, Sec, 3);
             strcat(response, cur_time);
+            strcat(response, "</h3>\r\n</body></html>");
             http_send(connfd, response);
             close(connfd);
             exit(0);
