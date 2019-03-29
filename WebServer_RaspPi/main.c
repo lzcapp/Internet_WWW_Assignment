@@ -100,13 +100,13 @@ int main(void) {
             char response[1024];
             char tempstr[20];
             strcat(response, "<html lang='en'><head><title>Alloha from RaspPi</title><meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"1\"/></head>");
-	    strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
-	    strcat(response, "<h2>This is a Raspberry Pi @Laurence's Dorm.</h2>\r\n");
-	    strcat(response, "<h3>&#x1f321;&nbsp;Temperature: ");
+            strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
+            strcat(response, "<h2>This is a Raspberry Pi @Laurence's Dorm.</h2>\r\n");
+            strcat(response, "<h3>&#x1f321;&nbsp;Temperature: ");
             sprintf(tempstr, "%.2f", temp);
             strcat(response, tempstr);
             strcat(response, "°C</h3>\r\n<h3>");
-	    strcat(response, "&#x231a; \t Time: ");
+	        strcat(response, "&#x231a; \t Time: ");
             char *cur_time = (char *)malloc(21*sizeof(char));
             time_t current_time;
             struct tm* now_time;
