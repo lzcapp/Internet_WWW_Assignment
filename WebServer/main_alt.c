@@ -1,8 +1,10 @@
 #pragma clang diagnostic push
-
-#pragma clang diagnostic ignored "-Wpointer-bool-conversion"
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
+// Suppress the warning message C4996, function superseded by newer functionality
+#pragma clang diagnostic ignored "-Wnonportable-include-path"
+#pragma warning(disable:4996)
 
+// Places a (static) library-search record in the object file
 #pragma comment(lib, "Ws2_32.lib")
 
 #include <winsock2.h>
@@ -12,13 +14,12 @@
 #include <string.h>
 #include <direct.h>
 
-
+// Define macros for our web server
 #define DEFAULT_PORT 8080
 #define BUF_LENGTH 1024
 #define MIN_BUF 128
 #define USER_ERROR -1
-#define SERVER "Server: derpy\r\n"
-
+#define SERVER "Server: csr_http1.1\r\n"
 
 int file_not_found(SOCKET sAccept);
 
@@ -26,9 +27,9 @@ int method_not_implemented(SOCKET sAccept);
 
 int file_ok(SOCKET sAccept, long flen, char *path);
 
-int sendFile(SOCKET sAccept, FILE *resource);
-
 int customized_error_page(SOCKET sAccept);
+
+int send_file(SOCKET sAccept, FILE *resource);
 
 struct fileType {
     char expansion[100];
@@ -44,7 +45,8 @@ struct fileType file_type[] =
                 {".mp3",      "audio/mp3"},
                 {".mp4",      "video/mp4"},
                 {".ico",      "image/x-icon"},
-                {(char) NULL, (char) NULL}};
+                {(char) NULL, (char) NULL}
+        };
 
 char *getExpansion(const char *expansion) {
     struct fileType *type;
@@ -56,9 +58,10 @@ char *getExpansion(const char *expansion) {
     return NULL;
 }
 
-
+// DWORD: "Double Word", 32-bit unsigned integer
+// LPVOID: pointer to a void object, Windows API typedef for void*
 DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
-    SOCKET sAccept = (SOCKET) (LPVOID) lparam;
+    SOCKET sAccept = (SOCKET) lparam;
     char recv_buf[BUF_LENGTH];
     char method[MIN_BUF];
     char url[MIN_BUF];
@@ -68,10 +71,10 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     // Clear the buffer
     memset(recv_buf, 0, sizeof(recv_buf));
 
-    if (recv(sAccept, recv_buf, sizeof(recv_buf), 0) == SOCKET_ERROR)   //接收错误
+    if (recv(sAccept, recv_buf, sizeof(recv_buf), 0) == SOCKET_ERROR) // Connection failed
     {
         printf("recv() Failed:%d\n", WSAGetLastError());
-        return USER_ERROR;
+        return (DWORD) USER_ERROR;
     } else { // Connection Successful
         printf("recv data from client:%s\n", recv_buf);
     }
@@ -88,13 +91,12 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     method[i] = '\0';
 
     // If the method is either not "GET" or "HEAD", respond with "501 Not Implemented"
-    if (strcmp(method, "GET") != 0) {
-        if (strcmp(method, "HEAD") != 0) {
-            closesocket(sAccept);
-            printf("501 Not Implemented.\nSocket connection closed.\n");
-            printf("====================\n\n");
-            return USER_ERROR;
-        }
+    if (stricmp(method, "GET") != 0 && stricmp(method, "HEAD") != 0) {
+        method_not_implemented(sAccept);
+        closesocket(sAccept);
+        printf("501 Not Implemented.\nSocket connection closed.\n");
+        printf("====================\n\n");
+        return (DWORD) USER_ERROR;
     }
     printf("method: %s\n", method);
 
@@ -117,8 +119,6 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
         j++;
     }
     url[i] = '\0';
-
-    // By default it's index.html
     if (strcmp(url, "\\") == 0) {
         strcpy(url, "\\index.html");
     }
@@ -137,14 +137,13 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     if (resource == NULL) {
         file_not_found(sAccept);
         // 如果method是GET，则发送自定义的file not found页面
-        if (0 == strcmp(method, "GET")) {
+        if (0 == stricmp(method, "GET")) {
             customized_error_page(sAccept);
         }
-
         closesocket(sAccept); //释放连接套接字，结束与该客户的通信
         printf("404 Not Found.\nSocket connection closed.\n");
         printf("====================\n\n");
-        return USER_ERROR;
+        return (DWORD) USER_ERROR;
     }
 
     // Calculate the length of file
@@ -157,18 +156,15 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     // Respond with "200 OK"
     char *pFile;
     pFile = strrchr(path, '.');
-
     file_ok(sAccept, flen, pFile);
 
     // If the method is "GET", Send the requested file
-    if (0 == strcmp(method, "GET")) {
-
-        if (0 == sendFile(sAccept, resource)) {
+    if (0 == stricmp(method, "GET")) {
+        if (0 == send_file(sAccept, resource)) {
             printf("file send successfully.\n");
         } else {
-            printf("file send failed.\n");
+            printf("file send unsuccessfully.\n");
         }
-
         char buffer[BUF_LENGTH];
         memset(buffer, 0, BUF_LENGTH);
     }
@@ -181,27 +177,6 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
 
     return 0;
 
-}
-
-
-// 发送404 file_not_found报头
-int file_not_found(SOCKET sAccept) {
-    char send_buf[MIN_BUF];
-    //  time_t timep;
-    //  time(&timep);
-    sprintf(send_buf, "HTTP/1.1 404 NOT FOUND\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
-    //  sprintf(send_buf, "Date: %s\r\n", ctime(&timep));
-    //  send(sAccept, send_buf, strlen(send_buf), 0);
-    sprintf(send_buf, "Connection: keep-alive\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
-    sprintf(send_buf, SERVER);
-    send(sAccept, send_buf, strlen(send_buf), 0);
-    sprintf(send_buf, "Content-Type: text/html\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
-    sprintf(send_buf, "\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
-    return 0;
 }
 
 // 501 NOT Implemented
@@ -220,24 +195,40 @@ int method_not_implemented(SOCKET sAccept) {
     return 0;
 }
 
-// 发送200 ok报头
+// 404 NOT FOUND
+int file_not_found(SOCKET sAccept) {
+    char send_buf[MIN_BUF];
+    sprintf(send_buf, "HTTP/1.1 404 NOT FOUND\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    sprintf(send_buf, "Connection: keep-alive\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    sprintf(send_buf, SERVER);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    sprintf(send_buf, "Content-Type: text/html\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    sprintf(send_buf, "\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    return 0;
+}
+
+// 200 OK
 int file_ok(SOCKET sAccept, long flen, char *path) {
     char send_buf[MIN_BUF];
     sprintf(send_buf, "HTTP/1.1 200 OK\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "Connection: keep-alive\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
-    //  sprintf(send_buf, "Date: %s\r\n", ctime(&timep));
-    //  send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, SERVER);
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "Content-Length: %ld\r\n", flen);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     send(sAccept, send_buf, strlen(send_buf), 0);
     char *type = getExpansion(path);
     sprintf(send_buf, "Content-Type: %s\r\n", type);
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    printf("%s", send_buf);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     return 0;
 }
 
@@ -245,24 +236,22 @@ int file_ok(SOCKET sAccept, long flen, char *path) {
 int customized_error_page(SOCKET sAccept) {
     char send_buf[MIN_BUF];
     sprintf(send_buf, "<HTML><TITLE>Not Found</TITLE>\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
-    sprintf(send_buf, "<BODY><h1 align='center'>404</h1><br/><h1 align='center'>file can not found.</h1>\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    sprintf(send_buf, "<BODY><h1 align='center'>404</h1><br/><h1 align='center'>file not found.</h1>\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "</BODY></HTML>\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     return 0;
 }
 
 // Send requested resources
-int sendFile(SOCKET sAccept, FILE *resource) {
+int send_file(SOCKET sAccept, FILE *resource) {
     char send_buf[BUF_LENGTH];
-    size_t bytes_read = 0;
-
     while (1) {
-        memset(send_buf, 0, sizeof(send_buf));       //缓存清0
-        bytes_read = fread(send_buf, sizeof(char), sizeof(send_buf), resource);
+        memset(send_buf, 0, sizeof(send_buf)); // Flush the buffer
+        fgets(send_buf, sizeof(send_buf), resource);
         //  printf("send_buf: %s\n",send_buf);
-        if (SOCKET_ERROR == send(sAccept, send_buf, bytes_read, 0)) {
+        if (SOCKET_ERROR == send(sAccept, send_buf, (int) strlen(send_buf), 0)) {
             printf("send() Failed:%d\n", WSAGetLastError());
             return USER_ERROR;
         }
@@ -274,9 +263,9 @@ int sendFile(SOCKET sAccept, FILE *resource) {
 
 int main() {
     WSADATA wsaData;
-    SOCKET sListen, sAccept;        //服务器监听套接字，连接套接字
-    int serverport = DEFAULT_PORT;   //服务器端口号
-    struct sockaddr_in ser, cli;   //服务器地址，客户端地址
+    SOCKET sListen, sAccept;
+    int serverport = DEFAULT_PORT;
+    struct sockaddr_in server, client;
     int iLen;
 
     printf("--------------------\n");
@@ -297,12 +286,14 @@ int main() {
     }
 
     // Create the address for server
-    ser.sin_family = AF_INET;
-    ser.sin_port = htons(serverport);               //服务器端口号
-    ser.sin_addr.s_addr = htonl(INADDR_ANY);   //服务器IP地址，默认使用本机IP
+    server.sin_family = AF_INET;
+    server.sin_port = htons((u_short) serverport);
+    // htonl(): converts the unsigned integer hostlong from host byte order to network byte order.
+    // INADDR_ANY: binds the socket to all available interfaces
+    server.sin_addr.s_addr = htonl(INADDR_ANY);
 
     //Bind listening socket to the server address
-    if (bind(sListen, (LPSOCKADDR) &ser, sizeof(ser)) == SOCKET_ERROR) {
+    if (bind(sListen, (LPSOCKADDR) &server, sizeof(server)) == SOCKET_ERROR) {
         printf("bind() failed: %d\n", WSAGetLastError());
         return USER_ERROR;
     }
@@ -316,8 +307,8 @@ int main() {
     // Wait for client's request
     while (1) {
         // Accept the request
-        iLen = sizeof(cli);
-        sAccept = accept(sListen, (struct sockaddr *) &cli, &iLen);
+        iLen = sizeof(client);
+        sAccept = accept(sListen, (struct sockaddr *) &client, &iLen);
         if (sAccept == INVALID_SOCKET) {
             printf("accept() Failed:%d\n", WSAGetLastError());
             break;
