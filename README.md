@@ -20,10 +20,10 @@ The following is the illustration of the interactions between server and client:
    Content-Length: 100
    ...
    ``` 
-- [ ] When the Web Browser receives the requested Web Page, it will interpret the content and display on the screen.
+- [x] When the Web Browser receives the requested Web Page, it will interpret the content and display on the screen.
    - [x] HTML
-   - [ ] Image
-   - [ ] Video
+   - [x] Image
+   - [x] Video
 - [ ] Extra features:
    - [ ] Black list / White list
    - [ ] Admin edit page
