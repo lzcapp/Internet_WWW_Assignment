@@ -1,0 +1,12 @@
+<ipClass>
+    <class>
+        <description>Outside UIC</description>
+        <address>192.168.123.127</address>
+    </class>
+    <class>
+        <description>Inside UIC</description>
+        <address>172.0.0.1</address>
+        <address>192.168.123.160</address>
+        <address>192.168.123.244</address>
+    </class>
+</ipClass>

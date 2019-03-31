@@ -1,0 +1,14 @@
+<blacklist>
+    <ip1>
+        <enable>0</enable>
+        <address>127.0.0.1</address>
+    </ip1>
+    <ip2>
+        <enable>1</enable>
+        <address>192.168.123.127</address>
+    </ip2>
+    <ip3>
+        <enable>0</enable>
+        <address>192.168.123.204</address>
+    </ip3>
+</blacklist>

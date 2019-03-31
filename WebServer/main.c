@@ -34,6 +34,13 @@ int sendDynamicPage(SOCKET sAccept);
 
 int customized_error_page(SOCKET sAccept);
 
+char *matchXMLWhitelist(const char *ipAddr);
+
+char *matchXMLBlacklist(const char *ipAddr);
+
+char *matchXMLClass(const char *ipAddr);
+
+
 struct fileType {
     char expansion[100];
     char type[100];
@@ -86,6 +93,14 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
         return USER_ERROR;
     } else { // Connection Successful
         printf("recv data from client:%s\n", recv_buf);
+    }
+
+    if ((clientAddr, "") != 0) {
+        method_not_implemented(sAccept);
+        closesocket(sAccept);
+        printf("501 Not Implemented.\nSocket connection closed.\n");
+        printf("====================\n\n");
+        return USER_ERROR;
     }
 
     // Handle the data received
@@ -319,6 +334,22 @@ int sendDynamicPage(SOCKET sAccept) {
         return USER_ERROR;
     }
     return 0;
+}
+
+char *matchXMLClass(const char *ipAddr) {
+    char path[] = "\\ipList\\ipClass.xml";
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) {
+        printf("Open xml file failed.\n");
+        return "Failure";
+    }
+    char buff[50];
+    while (fgets(buff, 50, fp)) {
+        if (strstr(buff, "<class>") != NULL) {
+
+        }
+    }
+    getchar();
 }
 
 int main() {
