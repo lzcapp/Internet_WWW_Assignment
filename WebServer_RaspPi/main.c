@@ -46,7 +46,7 @@ int main(void) {
     int listenfd, connfd;
     char buf[BUFF_SIZE];
     char str[INET_ADDRSTRLEN];
-    int i, n;
+    int n;
 
     struct sigaction act;
     act.sa_handler = handle_sig;
@@ -93,23 +93,40 @@ int main(void) {
             fd = open(TEMP_PATH, O_RDONLY);
             if (fd >= 0) {
                 if (read(fd, tempbuf, MAX_SIZE) < 0) {
-                    temp = -1;
                 }
             }
             temp = atoi(tempbuf) / 1000.0; // NOLINT(cert-err34-c)
             char response[1024];
             char tempstr[20];
-            strcat(response, "<html lang='en'><head><title>Alloha from RaspPi</title><meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"1\"/></head>");
+            strcat(response,
+                   "<html lang='en'><head><title>Alloha from RaspPi</title><meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"1\"/></head>");
+            strcat(response, "");
             strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
+            strcat(response, "<p>Server IP: ");
+            strcat(response, inet_ntoa(servaddr.sin_addr));
+            strcat(response, ":");
+            uint16_t serverPort = ntohs(servaddr.sin_port);
+            char serverPortNum[5];
+            sprintf(serverPortNum, "%d", serverPort);
+            strcat(response, serverPortNum);
+            strcat(response, "</p>\r\n");
+            strcat(response, "<p>Client IP: ");
+            strcat(response, inet_ntoa(cliaddr.sin_addr));
+            strcat(response, ":");
+            uint16_t clientPort = ntohs(cliaddr.sin_port);
+            char clientPortNum[10];
+            sprintf(clientPortNum, "%d", clientPort);
+            strcat(response, clientPortNum);
+            strcat(response, "</p>\r\n\r\n");
             strcat(response, "<h2>This is a Raspberry Pi @Laurence's Dorm.</h2>\r\n");
             strcat(response, "<h3>&#x1f321;&nbsp;Temperature: ");
             sprintf(tempstr, "%.2f", temp);
             strcat(response, tempstr);
-            strcat(response, "°C</h3>\r\n<h3>");
-	        strcat(response, "&#x231a; \t Time: ");
-            char *cur_time = (char *)malloc(21*sizeof(char));
+            strcat(response, "℃</h3>\r\n<h3>");
+            strcat(response, "&#x231a; \t Time: ");
+            char *cur_time = (char *) malloc(21 * sizeof(char));
             time_t current_time;
-            struct tm* now_time;
+            struct tm *now_time;
             time(&current_time);
             now_time = localtime(&current_time);
             char Year[6] = {0};

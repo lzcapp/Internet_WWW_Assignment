@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <direct.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 
 #define DEFAULT_PORT 8080
@@ -28,6 +30,8 @@ int file_ok(SOCKET sAccept, long flen, char *path);
 
 int sendFile(SOCKET sAccept, FILE *resource);
 
+int sendDynamicPage(SOCKET sAccept);
+
 int customized_error_page(SOCKET sAccept);
 
 struct fileType {
@@ -44,7 +48,15 @@ struct fileType file_type[] =
                 {".mp3",      "audio/mp3"},
                 {".mp4",      "video/mp4"},
                 {".ico",      "image/x-icon"},
-                {(char) NULL, (char) NULL}};
+                {(char) NULL, (char) NULL}
+        };
+
+boolean isDynamic = false;
+
+char serverAddr[32];
+char serverPort[5];
+char clientAddr[32];
+char clientPort[5];
 
 char *getExpansion(const char *expansion) {
     struct fileType *type;
@@ -88,13 +100,12 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     method[i] = '\0';
 
     // If the method is either not "GET" or "HEAD", respond with "501 Not Implemented"
-    if (strcmp(method, "GET") != 0) {
-        if (strcmp(method, "HEAD") != 0) {
-            closesocket(sAccept);
-            printf("501 Not Implemented.\nSocket connection closed.\n");
-            printf("====================\n\n");
-            return USER_ERROR;
-        }
+    if (strcmp(method, "GET") != 0 && strcmp(method, "HEAD") != 0) {
+        method_not_implemented(sAccept);
+        closesocket(sAccept);
+        printf("501 Not Implemented.\nSocket connection closed.\n");
+        printf("====================\n\n");
+        return USER_ERROR;
     }
     printf("method: %s\n", method);
 
@@ -120,7 +131,7 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
 
     // By default it's index.html
     if (strcmp(url, "\\") == 0) {
-        strcpy(url, "\\index.html");
+        isDynamic = true;
     }
     printf("url: %s\n", url);
 
@@ -134,13 +145,12 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     FILE *resource = fopen(path, "rb");
 
     // if the file is not exist, respond with "404 Not Found"
-    if (resource == NULL) {
+    if (resource == NULL && isDynamic == false) {
         file_not_found(sAccept);
         // 如果method是GET，则发送自定义的file not found页面
         if (0 == strcmp(method, "GET")) {
             customized_error_page(sAccept);
         }
-
         closesocket(sAccept); //释放连接套接字，结束与该客户的通信
         printf("404 Not Found.\nSocket connection closed.\n");
         printf("====================\n\n");
@@ -148,11 +158,16 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     }
 
     // Calculate the length of file
-    fseek(resource, 0, SEEK_SET);
-    fseek(resource, 0, SEEK_END);
-    long flen = ftell(resource);
-    printf("file length: %ld\n", flen);
-    fseek(resource, 0, SEEK_SET);
+    long flen;
+    if (isDynamic == true) {
+        flen = BUF_LENGTH;
+    } else {
+        fseek(resource, 0, SEEK_SET);
+        fseek(resource, 0, SEEK_END);
+        flen = ftell(resource);
+        printf("file length: %ld\n", flen);
+        fseek(resource, 0, SEEK_SET);
+    }
 
     // Respond with "200 OK"
     char *pFile;
@@ -162,18 +177,23 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
 
     // If the method is "GET", Send the requested file
     if (0 == strcmp(method, "GET")) {
-
-        if (0 == sendFile(sAccept, resource)) {
-            printf("file send successfully.\n");
+        if (isDynamic == true) {
+            if (0 == sendDynamicPage(sAccept)) {
+                printf("dynamic webpage send successfully.\n");
+            } else {
+                printf("dynamic webpage send failed.\n");
+            }
         } else {
-            printf("file send failed.\n");
+            if (0 == sendFile(sAccept, resource)) {
+                printf("file send successfully.\n");
+            } else {
+                printf("file send failed.\n");
+            }
         }
-
         char buffer[BUF_LENGTH];
         memset(buffer, 0, BUF_LENGTH);
     }
     fclose(resource);
-
     // Close the socket communication (connection)
     closesocket(sAccept);
     printf("200 OK.\nSocket connection closed.\n");
@@ -227,13 +247,16 @@ int file_ok(SOCKET sAccept, long flen, char *path) {
     send(sAccept, send_buf, strlen(send_buf), 0);
     sprintf(send_buf, "Connection: keep-alive\r\n");
     send(sAccept, send_buf, strlen(send_buf), 0);
-    //  sprintf(send_buf, "Date: %s\r\n", ctime(&timep));
-    //  send(sAccept, send_buf, strlen(send_buf), 0);
     sprintf(send_buf, SERVER);
     send(sAccept, send_buf, strlen(send_buf), 0);
     sprintf(send_buf, "Content-Length: %ld\r\n", flen);
     send(sAccept, send_buf, strlen(send_buf), 0);
-    char *type = getExpansion(path);
+    char *type = NULL;
+    if (isDynamic == true) {
+        sprintf(type, "text/html");
+    } else {
+        type = getExpansion(path);
+    }
     sprintf(send_buf, "Content-Type: %s\r\n", type);
     send(sAccept, send_buf, strlen(send_buf), 0);
     sprintf(send_buf, "\r\n");
@@ -257,7 +280,6 @@ int customized_error_page(SOCKET sAccept) {
 int sendFile(SOCKET sAccept, FILE *resource) {
     char send_buf[BUF_LENGTH];
     size_t bytes_read = 0;
-
     while (1) {
         memset(send_buf, 0, sizeof(send_buf));       //缓存清0
         bytes_read = fread(send_buf, sizeof(char), sizeof(send_buf), resource);
@@ -272,16 +294,43 @@ int sendFile(SOCKET sAccept, FILE *resource) {
     }
 }
 
+// Send dynamic webpage
+int sendDynamicPage(SOCKET sAccept) {
+    char response[BUF_LENGTH];
+    int len = BUF_LENGTH;
+    memset(response, 0, sizeof(response));
+    strcat(response,
+           "<html lang='en'><head><title>Hello from PC</title><meta charset=\"utf-8\"/></head>");
+    strcat(response, "");
+    strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
+    strcat(response, "<p>Server IP: ");
+    strcat(response, serverAddr);
+    strcat(response, ":");
+    strcat(response, serverPort);
+    strcat(response, "</p>\r\n");
+    strcat(response, "<p>Client IP: ");
+    strcat(response, clientAddr);
+    strcat(response, ":");
+    strcat(response, clientPort);
+    strcat(response, "</p>\r\n\r\n");
+    strcat(response, "<h2>This is a C WebServer on PC.</h2>\r\n");
+    if (SOCKET_ERROR == send(sAccept, response, len, 0)) {
+        printf("send() Failed:%d\n", WSAGetLastError());
+        return USER_ERROR;
+    }
+    return 0;
+}
+
 int main() {
     WSADATA wsaData;
     SOCKET sListen, sAccept;        //服务器监听套接字，连接套接字
-    int serverport = DEFAULT_PORT;   //服务器端口号
-    struct sockaddr_in ser, cli;   //服务器地址，客户端地址
+    int serverport = DEFAULT_PORT;  //服务器端口号
+    struct sockaddr_in ser, cli;    //服务器地址，客户端地址
     int iLen;
 
-    printf("--------------------\n");
-    printf("Server Listening... \n");
-    printf("--------------------\n");
+    printf("-------------------\n");
+    printf("Server Listening...\n");
+    printf("-------------------\n");
 
     // Load Winsock protocol
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
@@ -298,7 +347,7 @@ int main() {
 
     // Create the address for server
     ser.sin_family = AF_INET;
-    ser.sin_port = htons(serverport);               //服务器端口号
+    ser.sin_port = htons(serverport);          //服务器端口号
     ser.sin_addr.s_addr = htonl(INADDR_ANY);   //服务器IP地址，默认使用本机IP
 
     //Bind listening socket to the server address
@@ -322,6 +371,10 @@ int main() {
             printf("accept() Failed:%d\n", WSAGetLastError());
             break;
         }
+        sprintf(serverAddr, "%s", inet_ntoa(ser.sin_addr));
+        sprintf(serverPort, "%d", ntohs(ser.sin_port));
+        sprintf(clientAddr, "%s", inet_ntoa(cli.sin_addr));
+        sprintf(clientPort, "%d", ntohs(cli.sin_port));
         // Create thread for client browser's request
         DWORD ThreadID;
         CreateThread(NULL, 0, SimpleHTTPServer, (LPVOID) sAccept, 0, &ThreadID);
