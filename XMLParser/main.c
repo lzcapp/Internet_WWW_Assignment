@@ -68,6 +68,7 @@ char *matchXMLClass(const char *ipAddr, char *result) {
             }
         }
     }
+    return "Failed";
 }
 
 int matchXMLList(const char *listType, const char *ipAddr) {
@@ -104,9 +105,9 @@ int matchXMLList(const char *listType, const char *ipAddr) {
 
 int main() {
     char result[100];
-    printf("%s\n", matchXMLClass("192.168.123.160", result));
-    printf("%s\n", matchXMLClass("192.168.123.127", result));
-    printf("%d\n", matchXMLList("BlackList", "192.168.123.127"));
-    printf("%d\n", matchXMLList("WhiteList", "192.168.123.127"));
+    const char *ip = "127.0.0.1";
+    printf("%s\n", matchXMLClass(ip, result));
+    printf("%d\n", matchXMLList("BlackList", ip));
+    printf("%d\n", matchXMLList("WhiteList", ip));
     return 0;
 }

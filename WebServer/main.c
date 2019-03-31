@@ -13,6 +13,9 @@
 #include <direct.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <io.h>
+#include <ctype.h>
 
 
 #define DEFAULT_PORT 8080
@@ -34,11 +37,13 @@ int sendDynamicPage(SOCKET sAccept);
 
 int customized_error_page(SOCKET sAccept);
 
-char *matchXMLWhitelist(const char *ipAddr);
+char *matchXMLClass(const char *ipAddr, char *result);
 
-char *matchXMLBlacklist(const char *ipAddr);
+int matchXMLList(const char *listType, const char *ipAddr);
 
-char *matchXMLClass(const char *ipAddr);
+int searchTag(FILE *fp, char *tagName, const char *ipAddr);
+
+char *trim(char *str);
 
 
 struct fileType {
@@ -90,17 +95,9 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     if (recv(sAccept, recv_buf, sizeof(recv_buf), 0) == SOCKET_ERROR)   //接收错误
     {
         printf("recv() Failed:%d\n", WSAGetLastError());
-        return USER_ERROR;
+        return (DWORD) USER_ERROR;
     } else { // Connection Successful
         printf("recv data from client:%s\n", recv_buf);
-    }
-
-    if ((clientAddr, "") != 0) {
-        method_not_implemented(sAccept);
-        closesocket(sAccept);
-        printf("501 Not Implemented.\nSocket connection closed.\n");
-        printf("====================\n\n");
-        return USER_ERROR;
     }
 
     // Handle the data received
@@ -120,7 +117,7 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
         closesocket(sAccept);
         printf("501 Not Implemented.\nSocket connection closed.\n");
         printf("====================\n\n");
-        return USER_ERROR;
+        return (DWORD) USER_ERROR;
     }
     printf("method: %s\n", method);
 
@@ -169,7 +166,7 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
         closesocket(sAccept); //释放连接套接字，结束与该客户的通信
         printf("404 Not Found.\nSocket connection closed.\n");
         printf("====================\n\n");
-        return USER_ERROR;
+        return (DWORD) USER_ERROR;
     }
 
     // Calculate the length of file
@@ -225,17 +222,17 @@ int file_not_found(SOCKET sAccept) {
     //  time_t timep;
     //  time(&timep);
     sprintf(send_buf, "HTTP/1.1 404 NOT FOUND\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     //  sprintf(send_buf, "Date: %s\r\n", ctime(&timep));
     //  send(sAccept, send_buf, strlen(send_buf), 0);
     sprintf(send_buf, "Connection: keep-alive\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, SERVER);
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "Content-Type: text/html\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     return 0;
 }
 
@@ -259,13 +256,13 @@ int method_not_implemented(SOCKET sAccept) {
 int file_ok(SOCKET sAccept, long flen, char *path) {
     char send_buf[MIN_BUF];
     sprintf(send_buf, "HTTP/1.1 200 OK\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "Connection: keep-alive\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, SERVER);
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "Content-Length: %ld\r\n", flen);
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     char *type = NULL;
     if (isDynamic == true) {
         sprintf(type, "text/html");
@@ -273,9 +270,9 @@ int file_ok(SOCKET sAccept, long flen, char *path) {
         type = getExpansion(path);
     }
     sprintf(send_buf, "Content-Type: %s\r\n", type);
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     return 0;
 }
 
@@ -283,11 +280,11 @@ int file_ok(SOCKET sAccept, long flen, char *path) {
 int customized_error_page(SOCKET sAccept) {
     char send_buf[MIN_BUF];
     sprintf(send_buf, "<HTML><TITLE>Not Found</TITLE>\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "<BODY><h1 align='center'>404</h1><br/><h1 align='center'>file can not found.</h1>\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "</BODY></HTML>\r\n");
-    send(sAccept, send_buf, strlen(send_buf), 0);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
     return 0;
 }
 
@@ -299,7 +296,7 @@ int sendFile(SOCKET sAccept, FILE *resource) {
         memset(send_buf, 0, sizeof(send_buf));       //缓存清0
         bytes_read = fread(send_buf, sizeof(char), sizeof(send_buf), resource);
         //  printf("send_buf: %s\n",send_buf);
-        if (SOCKET_ERROR == send(sAccept, send_buf, bytes_read, 0)) {
+        if (SOCKET_ERROR == send(sAccept, send_buf, (int) bytes_read, 0)) {
             printf("send() Failed:%d\n", WSAGetLastError());
             return USER_ERROR;
         }
@@ -315,9 +312,9 @@ int sendDynamicPage(SOCKET sAccept) {
     int len = BUF_LENGTH;
     memset(response, 0, sizeof(response));
     strcat(response,
-           "<html lang='en'><head><title>Hello from PC</title><meta charset=\"utf-8\"/></head>");
-    strcat(response, "");
+           "<html lang='en'><head><title>Hello from PC</title><meta charset=\"utf-8\"/></head>\r\n");
     strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
+    strcat(response, "<h2>This is a C WebServer on PC.</h2>\r\n");
     strcat(response, "<p>Server IP: ");
     strcat(response, serverAddr);
     strcat(response, ":");
@@ -327,8 +324,22 @@ int sendDynamicPage(SOCKET sAccept) {
     strcat(response, clientAddr);
     strcat(response, ":");
     strcat(response, clientPort);
-    strcat(response, "</p>\r\n\r\n");
-    strcat(response, "<h2>This is a C WebServer on PC.</h2>\r\n");
+    strcat(response, "</p>\r\n");
+    strcat(response, "<p>Client is: ");
+    char result[100];
+    matchXMLClass(clientAddr, result);
+    strcat(response, result);
+    strcat(response, "</p>\r\n");
+    strcat(response, "<p>Client in ");
+    strcat(response, "<ul><li>Black List: ");
+    char isBlack[2], isWhite[2];
+    sprintf(isBlack, "%d", matchXMLList("BlackList", clientAddr));
+    strcat(response, isBlack);
+    sprintf(isWhite, "%d", matchXMLList("WhiteList", clientAddr));
+    strcat(response, "</li><li>White List: ");
+    strcat(response, isWhite);
+    strcat(response, "</li></ul>");
+    strcat(response, "</body>");
     if (SOCKET_ERROR == send(sAccept, response, len, 0)) {
         printf("send() Failed:%d\n", WSAGetLastError());
         return USER_ERROR;
@@ -336,20 +347,100 @@ int sendDynamicPage(SOCKET sAccept) {
     return 0;
 }
 
-char *matchXMLClass(const char *ipAddr) {
-    char path[] = "\\ipList\\ipClass.xml";
+char *matchXMLClass(const char *ipAddr, char *result) {
+    char path[_MAX_PATH];
+    char fileLoc[] = "\\ipList\\ipClass.xml";
+    _getcwd(path, _MAX_PATH);
+    strcat(path, fileLoc);
     FILE *fp = fopen(path, "r");
     if (fp == NULL) {
         printf("Open xml file failed.\n");
-        return "Failure";
+        return "Failed";
     }
+    FILE *fpTag;
     char buff[50];
-    while (fgets(buff, 50, fp)) {
+    while (fgets(buff, 50, fp))
+    {
         if (strstr(buff, "<class>") != NULL) {
-
+            fpTag = fp;
+            if (searchTag(fpTag, "class", ipAddr) == 0) {
+                // Get match in xml
+                while (fgets(buff, 50, fp)) {
+                    if (strstr(buff, "<description>") != NULL) {
+                        fgets(result, 100, fp);
+                        return trim(result);
+                    }
+                }
+            }
         }
     }
-    getchar();
+}
+
+int matchXMLList(const char *listType, const char *ipAddr) {
+    char path[_MAX_PATH];
+    char fileLoc[] = "\\ipList\\";
+    _getcwd(path, _MAX_PATH);
+    strcat(path, fileLoc);
+    strcat(path, "ip");
+    strcat(path, listType);
+    strcat(path, ".xml");
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) {
+        printf("Open xml file failed.\n");
+        return -1;
+    }
+    FILE *fpTag, *fpSearch;
+    char buff[50];
+    while (fgets(buff, 50, fp))
+    {
+        if (strstr(buff, "<ip>") != NULL) {
+            fpTag = fp;
+            fpSearch = fp;
+            if (searchTag(fpTag, "ip", ipAddr) == 0) {
+                // Get match in xml
+                while (fgets(buff, 50, fpSearch)) {
+                    if (strstr(buff, "<enable>") != NULL) {
+                        fgets(buff, 50, fpSearch);
+                        char *temp;
+                        return strtol(buff, &temp, 10);
+                    }
+                }
+            }
+        }
+    }
+}
+
+int searchTag(FILE *fp, char *tagName, const char *ipAddr) {
+    char buff[50];
+    char endTag[10];
+    strcat(endTag, "</");
+    strcat(endTag, tagName);
+    strcat(endTag, ">");
+    while (fgets(buff, 50, fp)) {
+        if (strstr(buff, endTag) == NULL) {
+            if (strstr(buff, ipAddr) != NULL) {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
+    }
+    return -1;
+}
+
+char *trim(char *str) {
+    int start, end, i;
+    if (str) {
+        for (start = 0; isspace(str[start]); start++) {}
+        for (end = (int) (strlen(str) - 1); isspace(str[end]); end--) {}
+        for (i = start; i <= end; i++) {
+            str[i - start] = str[i];
+        }
+        str[end - start + 1] = '\0';
+        return (str);
+    } else {
+        return NULL;
+    }
 }
 
 int main() {
@@ -378,7 +469,7 @@ int main() {
 
     // Create the address for server
     ser.sin_family = AF_INET;
-    ser.sin_port = htons(serverport);          //服务器端口号
+    ser.sin_port = htons((u_short) serverport);          //服务器端口号
     ser.sin_addr.s_addr = htonl(INADDR_ANY);   //服务器IP地址，默认使用本机IP
 
     //Bind listening socket to the server address
