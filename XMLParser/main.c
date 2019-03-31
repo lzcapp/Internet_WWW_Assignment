@@ -1,23 +1,112 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <io.h>
+#include <ctype.h>
 
-char *matchXMLClass(const char *ipAddr) {
-    char path[] = "\\ipList\\ipClass.xml";
+char *trim(char *str) {
+    int start, end, i;
+    if (str) {
+        for (start = 0; isspace(str[start]); start++) {}
+        for (end = (int) (strlen(str) - 1); isspace(str[end]); end--) {}
+        for (i = start; i <= end; i++) {
+            str[i - start] = str[i];
+        }
+        str[end - start + 1] = '\0';
+        return (str);
+    } else {
+        return NULL;
+    }
+}
+
+int matchXMLList(const char *listType, const char *ipAddr);
+
+int searchTag(FILE *fpTag, char *tagName, const char *ipAddr) {
+    char buff[50];
+    char endTag[10];
+    strcat(endTag, "</");
+    strcat(endTag, tagName);
+    strcat(endTag, ">");
+    while (fgets(buff, 50, fpTag)) {
+        if (strstr(buff, endTag) == NULL) {
+            if (strstr(buff, ipAddr) != NULL) {
+                return 0;
+            }
+        } else {
+            return -1;
+        }
+    }
+    return -1;
+}
+
+char *matchXMLClass(const char *ipAddr, char *result) {
+    char path[_MAX_PATH];
+    char fileLoc[] = "\\ipList\\ipClass.xml";
+    _getcwd(path, _MAX_PATH);
+    strcat(path, fileLoc);
     FILE *fp = fopen(path, "r");
     if (fp == NULL) {
         printf("Open xml file failed.\n");
-        return "Failure";
+        return "Failed";
     }
+    FILE *fpTag, *fpSearch;
     char buff[50];
-    while (fgets(buff, 50, fp))
-    {
+    while (fgets(buff, 50, fp)) {
         if (strstr(buff, "<class>") != NULL) {
-
+            fpTag = fp;
+            fpSearch = fp;
+            if (searchTag(fpTag, "class", ipAddr) == 0) {
+                // Get match in xml
+                while (fgets(buff, 50, fpSearch)) {
+                    if (strstr(buff, "<description>") != NULL) {
+                        fgets(result, 100, fpSearch);
+                        trim(result);
+                        trim(result);
+                        return result;
+                    }
+                }
+            }
         }
     }
-    getchar();
+}
+
+int matchXMLList(const char *listType, const char *ipAddr) {
+    char path[_MAX_PATH];
+    char fileLoc[] = "\\ipList\\";
+    _getcwd(path, _MAX_PATH);
+    strcat(path, fileLoc);
+    strcat(path, "ip");
+    strcat(path, listType);
+    strcat(path, ".xml");
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) {
+        printf("Open xml file failed.\n");
+        return -1;
+    }
+    FILE *fpTag, *fpSearch;
+    char buff[50];
+    while (fgets(buff, 50, fp)) {
+        if (strstr(buff, "<ip>") != NULL) {
+            fpTag = fp;
+            fpSearch = fp;
+            if (searchTag(fpTag, "ip", ipAddr) == 0) {
+                // Get match in xml
+                while (fgets(buff, 50, fpSearch)) {
+                    if (strstr(buff, "<enable>") != NULL) {
+                        fgets(buff, 50, fpSearch);
+                        return atoi(buff);
+                    }
+                }
+            }
+        }
+    }
 }
 
 int main() {
-    printf("Hello, World!\n");
+    char result[100];
+    printf("%s\n", matchXMLClass("192.168.123.160", result));
+    printf("%s\n", matchXMLClass("192.168.123.127", result));
+    printf("%d\n", matchXMLList("BlackList", "192.168.123.127"));
+    printf("%d\n", matchXMLList("WhiteList", "192.168.123.127"));
     return 0;
 }
