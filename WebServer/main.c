@@ -160,7 +160,7 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     if (resource == NULL && isDynamic == false) {
         file_not_found(sAccept);
         // 如果method是GET，则发送自定义的file not found页面
-        if (0 == strcmp(method, "GET")) {
+        if (strcmp(method, "GET") == 0) {
             customized_error_page(sAccept);
         }
         closesocket(sAccept); //释放连接套接字，结束与该客户的通信
@@ -188,15 +188,15 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     file_ok(sAccept, flen, pFile);
 
     // If the method is "GET", Send the requested file
-    if (0 == strcmp(method, "GET")) {
+    if (strcmp(method, "GET") == 0) {
         if (isDynamic == true) {
-            if (0 == sendDynamicPage(sAccept)) {
+            if (sendDynamicPage(sAccept) == 0) {
                 printf("dynamic webpage send successfully.\n");
             } else {
                 printf("dynamic webpage send failed.\n");
             }
         } else {
-            if (0 == sendFile(sAccept, resource)) {
+            if (sendFile(sAccept, resource) == 0) {
                 printf("file send successfully.\n");
             } else {
                 printf("file send failed.\n");
