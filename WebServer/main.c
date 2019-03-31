@@ -328,6 +328,7 @@ int sendDynamicPage(SOCKET sAccept) {
     strcat(response, "<p>Client is: ");
     char result[100];
     matchXMLClass(clientAddr, result);
+    strcpy(result, result + 3);
     strcat(response, result);
     strcat(response, "</p>\r\n");
     strcat(response, "<p>Client in ");
@@ -359,8 +360,7 @@ char *matchXMLClass(const char *ipAddr, char *result) {
     }
     FILE *fpTag;
     char buff[50];
-    while (fgets(buff, 50, fp))
-    {
+    while (fgets(buff, 50, fp)) {
         if (strstr(buff, "<class>") != NULL) {
             fpTag = fp;
             if (searchTag(fpTag, "class", ipAddr) == 0) {
@@ -391,8 +391,7 @@ int matchXMLList(const char *listType, const char *ipAddr) {
     }
     FILE *fpTag, *fpSearch;
     char buff[50];
-    while (fgets(buff, 50, fp))
-    {
+    while (fgets(buff, 50, fp)) {
         if (strstr(buff, "<ip>") != NULL) {
             fpTag = fp;
             fpSearch = fp;
