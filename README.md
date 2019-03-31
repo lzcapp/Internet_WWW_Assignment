@@ -25,12 +25,12 @@ The following is the illustration of the interactions between server and client:
    - [x] Image
    - [x] Video
 - [ ] Extra features:
-   - [ ] Black list / White list
+   - [ ] IP filtering
+      - [ ] Black list / White list
+      - [ ] Dynamic content / advertisement
    - [ ] Admin edit page
    - [ ] Change server directory path and port number
    - [ ] Password for specified directory
-   - [ ] IP filtering
-   - [ ] Dynamic advertisement
    - [ ] VIP
  - [ ] Cross-platform:
    - [ ] Raspberry Pi
