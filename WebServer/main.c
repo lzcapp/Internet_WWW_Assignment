@@ -61,6 +61,7 @@ struct fileType file_type[] =
                 {".mp3",      "audio/mp3"},
                 {".mp4",      "video/mp4"},
                 {".ico",      "image/x-icon"},
+                {".css",      "text/css"},
                 {(char) NULL, (char) NULL}
         };
 
@@ -315,40 +316,49 @@ int sendDynamicPage(SOCKET sAccept) {
     char response[BUFF_SIZE];
     int len = BUFF_SIZE;
     memset(response, 0, sizeof(response));
-    strcat(response,
-           "<html lang='en'><head><title>Hello from PC</title><meta charset=\"utf-8\"/></head>\r\n");
+    strcat(response, "<html><head><title>Hello from PC</title>");
+    strcat(response, "<meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"0.5\"/>");
+    strcat(response, "<style type=\"text/css\">body {font-family:\"Times New Roman\";text-align: center;");
+    strcat(response, "background-color: #07080C;");
+    strcat(response, "color: rgb(114, 255, 109);");
+    strcat(response, "margin-left: 10em;");
+    strcat(response, "margin-right: 10em;}");
+    strcat(response, "h1{font-size: 3em;} h2{font-size: 2.5em;font-style: italic;}");
+    strcat(response, "p{font-size: 1.8em;text-align: left;margin-left: 15em;margin-right: 15em;}");
+    strcat(response, "</style></head>\r\n");
     strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
     strcat(response, "<h2>This is a C WebServer on PC.</h2>\r\n");
-    strcat(response, "<p>Server IP: ");
+    strcat(response, "<p>· Server IP: ");
     strcat(response, serverAddr);
     strcat(response, ":");
     strcat(response, serverPort);
     strcat(response, "</p>\r\n");
-    strcat(response, "<p>Client IP: ");
+    strcat(response, "<p>· Client IP: ");
     strcat(response, clientAddr);
     strcat(response, ":");
     strcat(response, clientPort);
     strcat(response, "</p>\r\n");
-    strcat(response, "<p>Client is: ");
+    strcat(response, "<p>· Client is: ");
     char result[100];
     matchXMLClass(clientAddr, result);
     strcpy(result, result + 3);
     strcat(response, result);
     strcat(response, "</p>\r\n");
-    strcat(response, "<p>Client in ");
-    strcat(response, "<ul><li>Black List: ");
+    strcat(response, "<p>· Client in ");
+    strcat(response, "<br/>&emsp;&emsp;· Black List: ");
     char isBlack[2], isWhite[2];
     sprintf(isBlack, "%d", matchXMLList("BlackList", clientAddr));
     strcat(response, isBlack);
     sprintf(isWhite, "%d", matchXMLList("WhiteList", clientAddr));
-    strcat(response, "</li><li>White List: ");
+    strcat(response, "<br/>&emsp;&emsp;· White List: ");
     strcat(response, isWhite);
-    strcat(response, "</li></ul>");
+    strcat(response, "");
     strcat(response, "</body>");
     if (SOCKET_ERROR == send(sAccept, response, len, 0)) {
         printf("send() Failed:%d\n", WSAGetLastError());
         return USER_ERROR;
     }
+    isDynamic = false;
     return 0;
 }
 

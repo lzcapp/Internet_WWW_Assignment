@@ -98,8 +98,15 @@ int main(void) {
             char response[1024];
             char tempstr[20];
             strcat(response, "<html lang='en'><head><title>Alloha from RaspPi</title>");
-            strcat(response, "<meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"0.5\"/></head>");
-            strcat(response, "");
+            strcat(response, "<meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"0.5\"/>");
+            strcat(response, "<style type=\"text/css\">body {font-family:\"Times New Roman\";text-align: center;");
+            strcat(response, "background-color: #07080C;");
+            strcat(response, "color: rgb(114, 255, 109);");
+            strcat(response, "margin-left: 10em;");
+            strcat(response, "margin-right: 10em;}");
+            strcat(response, "h1{font-size: 3em;} h2{font-size: 2.5em;font-style: italic;}");
+            strcat(response, "p{font-size: 1.8em;text-align: left;margin-left: 15em;margin-right: 15em;}");
+            strcat(response, "</style></head>\r\n");
             strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
             strcat(response, "<p>Server IP: ");
             strcat(response, inet_ntoa(servaddr.sin_addr));
