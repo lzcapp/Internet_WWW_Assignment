@@ -144,6 +144,9 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
 
     // By default it's index.html
     if (strcmp(url, "\\") == 0) {
+        strcat(url, "index.html");
+    }
+    if (strcmp(url, "\\info") == 0) {
         isDynamic = true;
     }
     printf("url: %s\n", url);
@@ -160,11 +163,11 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     // if the file is not exist, respond with "404 Not Found"
     if (resource == NULL && isDynamic == false) {
         file_not_found(sAccept);
-        // 如果method是GET，则发送自定义的file not found页面
+
         if (strcmp(method, "GET") == 0) {
             customized_error_page(sAccept);
         }
-        closesocket(sAccept); //释放连接套接字，结束与该客户的通信
+        closesocket(sAccept);
         printf("404 Not Found.\nSocket connection closed.\n");
         printf("====================\n\n");
         return (DWORD) USER_ERROR;
@@ -280,7 +283,7 @@ int file_ok(SOCKET sAccept, long flen, char *path) {
 // Customized error page
 int customized_error_page(SOCKET sAccept) {
     char send_buf[MIN_BUF];
-    sprintf(send_buf, "<HTML><TITLE>Not Found</TITLE>\r\n");
+    sprintf(send_buf, "<HTML><TITLE>ERROR</TITLE>\r\n");
     send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, "<BODY><h1 align='center'>404</h1><br/><h1 align='center'>file can not found.</h1>\r\n");
     send(sAccept, send_buf, (int) strlen(send_buf), 0);
