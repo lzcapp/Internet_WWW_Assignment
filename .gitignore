@@ -480,3 +480,4 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 *.cbp
+WebServer/cmake-build-debug/Makefile
