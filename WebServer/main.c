@@ -50,6 +50,8 @@ char *matchXMLClass(const char *ipAddr, char *result);
 // 403 Forbidden
 int forbidden(SOCKET sAccept);
 
+int adDynamicPage(SOCKET sAccept);
+
 struct fileType {
     char expansion[100];
     char type[100];
@@ -187,6 +189,9 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     if (strcmp(url, "\\info") == 0) {
         isDynamic = true;
     }
+    if (strcmp(url, "\\advertisement") == 0) {
+        isDynamic = true;
+    }
     printf("url: %s\n", url);
 
     if (strcmp(url, "\\public.html") == 0) {
@@ -252,17 +257,24 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     // If the method is "GET", Send the requested file
     if (strcmp(method, "GET") == 0) {
         if (isDynamic == true) {
-            if (sendDynamicPage(sAccept) == 0) {
-                printf("dynamic webpage send successfully.\n");
-            } else {
-                printf("dynamic webpage send failed.\n");
+            if (strcmp(url, "\\info") == 0) {
+                if (sendDynamicPage(sAccept) == 0) {
+                    printf("dynamic webpage send successfully.\n");
+                } else {
+                    printf("dynamic webpage send failed.\n");
+                }
             }
+            if (strcmp(url, "\\advertisement") == 0) {
+                if (adDynamicPage(sAccept) == 0) {
+                    printf("dynamic webpage send successfully.\n");
+                } else {
+                    printf("dynamic webpage send failed.\n");
+                }
+            }
+        } else if (sendFile(sAccept, resource) == 0) {
+            printf("file send successfully.\n");
         } else {
-            if (sendFile(sAccept, resource) == 0) {
-                printf("file send successfully.\n");
-            } else {
-                printf("file send failed.\n");
-            }
+            printf("file send failed.\n");
         }
         char buffer[BUFF_SIZE];
         memset(buffer, 0, BUFF_SIZE);
@@ -376,6 +388,39 @@ int sendFile(SOCKET sAccept, FILE *resource) {
             return 0;
         }
     }
+}
+
+int adDynamicPage(SOCKET sAccept) {
+    int len = BUFF_SIZE;
+    char response[BUFF_SIZE];
+    memset(response, 0, sizeof(response));
+    strcat(response, "<html><head><title>Dynamic AD</title>");
+    strcat(response, "<meta charset=\"utf-8\"/>");
+    strcat(response, "<style type=\"text/css\">body {font-family:\"Times New Roman\";text-align: center;");
+    strcat(response, "background-color: #07080C;");
+    strcat(response, "color: rgb(114, 255, 109);");
+    strcat(response, "margin-left: 10em;");
+    strcat(response, "margin-right: 10em;}");
+    strcat(response, "h1{font-size: 3em;} h2{font-size: 2.5em;font-style: italic;}");
+    strcat(response, "p{font-size: 1.8em;text-align: left;margin-left: 10em;margin-right: 10em;}");
+    strcat(response, "</style></head>\r\n");
+    strcat(response, "<body><h1>Do not go gentle into that good night</h1>\r\n");
+    strcat(response, "<p>Do not go gentle into that good night,</p><br/>");
+    char result[100];
+    matchXMLClass(clientAddr, result);
+    if (result[0] == '0') {
+        strcat(response, "<div id=\"advertisement\"><img src=\"http://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2018/02_GS_admission-cn.jpg\" width=\"100%\"></div><br/>");
+    } else if (result[0] == '1') {
+        strcat(response, "<div id=\"advertisement\"><img src=\"http://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2019/2019_Guangdong_Admission_banner.jpg\" width=\"100%\"></div><br/>");
+    }
+    strcat(response, "<p>Old age should burn and rave at close of day;</p><br/>");
+    strcat(response, "<p>Rage, rage against the dying of the light.</p><br/>");
+    if (SOCKET_ERROR == send(sAccept, response, len, 0)) {
+        printf("send() Failed:%d\n", WSAGetLastError());
+        return USER_ERROR;
+    }
+    isDynamic = false;
+    return 0;
 }
 
 // Send dynamic webpage
