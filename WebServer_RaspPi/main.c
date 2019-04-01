@@ -97,8 +97,8 @@ int main(void) {
             temp = atoi(tempbuf) / 1000.0; // NOLINT(cert-err34-c)
             char response[1024];
             char tempstr[20];
-            strcat(response,
-                   "<html lang='en'><head><title>Alloha from RaspPi</title><meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"1\"/></head>");
+            strcat(response, "<html lang='en'><head><title>Alloha from RaspPi</title>");
+            strcat(response, "<meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"0.5\"/></head>");
             strcat(response, "");
             strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
             strcat(response, "<p>Server IP: ");
