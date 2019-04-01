@@ -18,8 +18,9 @@
 #include <ctype.h>
 
 
-#define DEFAULT_PORT 8080
-#define BUF_LENGTH 1024
+#define BUFF_SIZE 1024
+#define SERV_PORT 8080
+
 #define MIN_BUF 128
 #define USER_ERROR -1
 #define SERVER "Server: derpy\r\n"
@@ -83,7 +84,7 @@ char *getExpansion(const char *expansion) {
 
 DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     SOCKET sAccept = (SOCKET) (LPVOID) lparam;
-    char recv_buf[BUF_LENGTH];
+    char recv_buf[BUFF_SIZE];
     char method[MIN_BUF];
     char url[MIN_BUF];
     char path[_MAX_PATH];
@@ -172,7 +173,7 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     // Calculate the length of file
     long flen;
     if (isDynamic == true) {
-        flen = BUF_LENGTH;
+        flen = BUFF_SIZE;
     } else {
         fseek(resource, 0, SEEK_SET);
         fseek(resource, 0, SEEK_END);
@@ -202,8 +203,8 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
                 printf("file send failed.\n");
             }
         }
-        char buffer[BUF_LENGTH];
-        memset(buffer, 0, BUF_LENGTH);
+        char buffer[BUFF_SIZE];
+        memset(buffer, 0, BUFF_SIZE);
     }
     fclose(resource);
     // Close the socket communication (connection)
@@ -290,7 +291,7 @@ int customized_error_page(SOCKET sAccept) {
 
 // Send requested resources
 int sendFile(SOCKET sAccept, FILE *resource) {
-    char send_buf[BUF_LENGTH];
+    char send_buf[BUFF_SIZE];
     size_t bytes_read = 0;
     while (1) {
         memset(send_buf, 0, sizeof(send_buf));       //缓存清0
@@ -308,8 +309,8 @@ int sendFile(SOCKET sAccept, FILE *resource) {
 
 // Send dynamic webpage
 int sendDynamicPage(SOCKET sAccept) {
-    char response[BUF_LENGTH];
-    int len = BUF_LENGTH;
+    char response[BUFF_SIZE];
+    int len = BUFF_SIZE;
     memset(response, 0, sizeof(response));
     strcat(response,
            "<html lang='en'><head><title>Hello from PC</title><meta charset=\"utf-8\"/></head>\r\n");
@@ -445,7 +446,7 @@ char *trim(char *str) {
 int main() {
     WSADATA wsaData;
     SOCKET sListen, sAccept;        //服务器监听套接字，连接套接字
-    int serverport = DEFAULT_PORT;  //服务器端口号
+    int serverport = SERV_PORT;  //服务器端口号
     struct sockaddr_in ser, cli;    //服务器地址，客户端地址
     int iLen;
 
