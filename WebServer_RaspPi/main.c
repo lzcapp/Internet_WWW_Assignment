@@ -86,7 +86,6 @@ int main(void) {
             }
             printf("received from %s at PORT %d\n", inet_ntop(AF_INET, &cliaddr.sin_addr, str, sizeof(str)),
                    ntohs(cliaddr.sin_port));
-            fputs(buf, stdout);
             int fd;
             double temp = 0;
             char tempbuf[MAX_SIZE];
