@@ -11,14 +11,20 @@
         }
     </style>
     <link rel="stylesheet" href="../styles.css">
+    <script src="javascript.js"></script>
 </head>
 <body>
-	<h1>C WebServer @ x86/64</h1>
+    <h1>C WebServer @ x86/64</h1>
+    <p id="giveto">To <span id="navigator"></span> User: </p>
+    <script>
+        txt = getBrowser();
+        document.getElementById("navigator").innerHTML = txt;
+    </script>
 	<p id="poetry">
         Do not go gentle into that good night. <br/>
         Rage, rage against the dying of the light. <br/>
     </p>
     <p id="author">—— Dylan Thomas, 1914 - 1953</p>
-	<img src="test.jpg" alt="test JPG file">
+	<a href="/showcase.html"><img src="test.jpg" alt="test JPG file"></a>
 </body>
 </html>

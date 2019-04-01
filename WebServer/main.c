@@ -38,14 +38,17 @@ int sendDynamicPage(SOCKET sAccept);
 
 int customized_error_page(SOCKET sAccept);
 
-char *matchXMLClass(const char *ipAddr, char *result);
-
-int matchXMLList(const char *listType, const char *ipAddr);
-
 int searchTag(FILE *fp, char *tagName, const char *ipAddr);
 
 char *trim(char *str);
 
+int matchXMLList(const char *listType, const char *ipAddr);
+
+char *matchXMLClass(const char *ipAddr, char *result);
+
+
+// 403 Forbidden
+int forbidden(SOCKET sAccept);
 
 struct fileType {
     char expansion[100];
@@ -62,6 +65,7 @@ struct fileType file_type[] =
                 {".mp4",      "video/mp4"},
                 {".ico",      "image/x-icon"},
                 {".css",      "text/css"},
+                {".js",       "application/javascript"},
                 {(char) NULL, (char) NULL}
         };
 
@@ -82,6 +86,39 @@ char *getExpansion(const char *expansion) {
     return NULL;
 }
 
+int matchXMLList(const char *listType, const char *ipAddr) {
+    char path[_MAX_PATH];
+    char fileLoc[] = "\\ipList\\";
+    _getcwd(path, _MAX_PATH);
+    strcat(path, fileLoc);
+    strcat(path, "ip");
+    strcat(path, listType);
+    strcat(path, ".xml");
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) {
+        printf("Open xml file failed.\n");
+        return -1;
+    }
+    FILE *fpTag, *fpSearch;
+    char buff[50];
+    while (fgets(buff, 50, fp)) {
+        if (strstr(buff, "<ip>") != NULL) {
+            fpTag = fp;
+            fpSearch = fp;
+            if (searchTag(fpTag, "ip", ipAddr) == 0) {
+                // Get match in xml
+                while (fgets(buff, 50, fpSearch)) {
+                    if (strstr(buff, "<enable>") != NULL) {
+                        fgets(buff, 50, fpSearch);
+                        char *temp;
+                        return strtol(buff, &temp, 10);
+                    }
+                }
+            }
+        }
+    }
+    return -1;
+}
 
 DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     SOCKET sAccept = (SOCKET) (LPVOID) lparam;
@@ -152,6 +189,26 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     }
     printf("url: %s\n", url);
 
+    if (strcmp(url, "\\public.html") == 0) {
+        if (matchXMLList("BlackList", clientAddr) == 1) {
+            forbidden(sAccept);
+            closesocket(sAccept);
+            printf("403 Forbidden.\nSocket connection closed.\n");
+            printf("====================\n\n");
+            return (DWORD) USER_ERROR;
+        }
+    }
+
+    if (strcmp(url, "\\insider.html") == 0) {
+        if (matchXMLList("WhiteList", clientAddr) == -1) {
+            forbidden(sAccept);
+            closesocket(sAccept);
+            printf("403 Forbidden.\nSocket connection closed.\n");
+            printf("====================\n\n");
+            return (DWORD) USER_ERROR;
+        }
+    }
+
     // _getcwd: Gets the current working directory
     _getcwd(path, _MAX_PATH);
     strcat(path, url);
@@ -217,19 +274,29 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     printf("====================\n\n");
 
     return 0;
-
 }
 
+// 403 Forbidden
+int forbidden(SOCKET sAccept) {
+    char send_buf[MIN_BUF];
+    sprintf(send_buf, "HTTP/1.1 403 Forbidden\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    sprintf(send_buf, "Connection: keep-alive\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    sprintf(send_buf, SERVER);
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    sprintf(send_buf, "Content-Type: text/html\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    sprintf(send_buf, "\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+    return 0;
+}
 
-// 发送404 file_not_found报头
+// 404 NOT FOUND
 int file_not_found(SOCKET sAccept) {
     char send_buf[MIN_BUF];
-    //  time_t timep;
-    //  time(&timep);
     sprintf(send_buf, "HTTP/1.1 404 NOT FOUND\r\n");
     send(sAccept, send_buf, (int) strlen(send_buf), 0);
-    //  sprintf(send_buf, "Date: %s\r\n", ctime(&timep));
-    //  send(sAccept, send_buf, strlen(send_buf), 0);
     sprintf(send_buf, "Connection: keep-alive\r\n");
     send(sAccept, send_buf, (int) strlen(send_buf), 0);
     sprintf(send_buf, SERVER);
@@ -317,14 +384,14 @@ int sendDynamicPage(SOCKET sAccept) {
     int len = BUFF_SIZE;
     memset(response, 0, sizeof(response));
     strcat(response, "<html><head><title>Hello from PC</title>");
-    strcat(response, "<meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"0.5\"/>");
+    strcat(response, "<meta charset=\"utf-8\" http-equiv=\"refresh\" content=\"5\"/>");
     strcat(response, "<style type=\"text/css\">body {font-family:\"Times New Roman\";text-align: center;");
     strcat(response, "background-color: #07080C;");
     strcat(response, "color: rgb(114, 255, 109);");
     strcat(response, "margin-left: 10em;");
     strcat(response, "margin-right: 10em;}");
     strcat(response, "h1{font-size: 3em;} h2{font-size: 2.5em;font-style: italic;}");
-    strcat(response, "p{font-size: 1.8em;text-align: left;margin-left: 15em;margin-right: 15em;}");
+    strcat(response, "p{font-size: 1.8em;text-align: left;margin-left: 10em;margin-right: 10em;}");
     strcat(response, "</style></head>\r\n");
     strcat(response, "<body><h1>Alloha, World!</h1>\r\n");
     strcat(response, "<h2>This is a C WebServer on PC.</h2>\r\n");
@@ -346,13 +413,22 @@ int sendDynamicPage(SOCKET sAccept) {
     strcat(response, "</p>\r\n");
     strcat(response, "<p>· Client in ");
     strcat(response, "<br/>&emsp;&emsp;· Black List: ");
-    char isBlack[2], isWhite[2];
-    sprintf(isBlack, "%d", matchXMLList("BlackList", clientAddr));
+    char isBlack[4], isWhite[4];
+    if (matchXMLList("BlackList", clientAddr) == 0) {
+        strcpy(isBlack, "No");
+    } else {
+        strcpy(isBlack, "Yes");
+    }
     strcat(response, isBlack);
-    sprintf(isWhite, "%d", matchXMLList("WhiteList", clientAddr));
+    if (matchXMLList("WhiteList", clientAddr) == 0) {
+        strcpy(isWhite, "No");
+    } else {
+        strcpy(isWhite, "Yes");
+    }
     strcat(response, "<br/>&emsp;&emsp;· White List: ");
     strcat(response, isWhite);
-    strcat(response, "");
+    strcat(response,
+           "<br/><br/><img src=\"http://www.zhmb.org.cn/jeecms/static/common/images/sj4.jpg\" width=\"100%\">");
     strcat(response, "</body>");
     if (SOCKET_ERROR == send(sAccept, response, len, 0)) {
         printf("send() Failed:%d\n", WSAGetLastError());
@@ -388,39 +464,7 @@ char *matchXMLClass(const char *ipAddr, char *result) {
             }
         }
     }
-}
-
-int matchXMLList(const char *listType, const char *ipAddr) {
-    char path[_MAX_PATH];
-    char fileLoc[] = "\\ipList\\";
-    _getcwd(path, _MAX_PATH);
-    strcat(path, fileLoc);
-    strcat(path, "ip");
-    strcat(path, listType);
-    strcat(path, ".xml");
-    FILE *fp = fopen(path, "r");
-    if (fp == NULL) {
-        printf("Open xml file failed.\n");
-        return -1;
-    }
-    FILE *fpTag, *fpSearch;
-    char buff[50];
-    while (fgets(buff, 50, fp)) {
-        if (strstr(buff, "<ip>") != NULL) {
-            fpTag = fp;
-            fpSearch = fp;
-            if (searchTag(fpTag, "ip", ipAddr) == 0) {
-                // Get match in xml
-                while (fgets(buff, 50, fpSearch)) {
-                    if (strstr(buff, "<enable>") != NULL) {
-                        fgets(buff, 50, fpSearch);
-                        char *temp;
-                        return strtol(buff, &temp, 10);
-                    }
-                }
-            }
-        }
-    }
+    return "ERROR";
 }
 
 int searchTag(FILE *fp, char *tagName, const char *ipAddr) {
