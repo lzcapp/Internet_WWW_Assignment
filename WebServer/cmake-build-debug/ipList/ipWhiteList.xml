@@ -9,7 +9,15 @@
     </ip>
     <ip>
         <address>
-            192.168.123.127
+            192.168.123.161
+        </address>
+        <enable>
+            1
+        </enable>
+    </ip>
+    <ip>
+        <address>
+            192.168.43.136
         </address>
         <enable>
             0
@@ -17,7 +25,7 @@
     </ip>
     <ip>
         <address>
-            192.168.123.204
+            192.168.43.233
         </address>
         <enable>
             0

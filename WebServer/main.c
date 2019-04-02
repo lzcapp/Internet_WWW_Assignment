@@ -60,7 +60,8 @@ struct fileType {
 struct fileType file_type[] =
         {
                 {".html",     "text/html"},
-                {".gif",      "imag/gif"},
+                //{".gif",    "imag/gif"},
+                {".gif",      "image/gif"},
                 {".jpg",      "image/jpg"},
                 {".png",      "image/png"},
                 {".mp3",      "audio/mp3"},
