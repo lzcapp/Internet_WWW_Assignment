@@ -1,7 +1,7 @@
 # Internet_WorldWideWeb
 Team repo for course: Internet and the World Wide Web.
 
-## Assignment Description and Requirements
+## Assignment 1
 Students are required to develop a Web Server by using Windows Socket
 Programming C++. The program should be able to serve multiple requests
 concurrently from different Web Browsers. The Web document stored in the Web
@@ -35,16 +35,16 @@ The following is the illustration of the interactions between server and client:
  - [ ] Cross-platform:
    - [ ] Raspberry Pi
 
-## Request Method and Respond Status Code 
+### Request Method and Respond Status Code 
    - [Request Metod](https://github.com/RainySummerLuo/Internet_WWW_Assignment/wiki/Method-for-Request)
    - [Status Code](https://github.com/RainySummerLuo/Internet_WWW_Assignment/wiki/Status-Code-for-Response)
 
-## Building Enviornment 
+### Building Enviornment 
    - [Jetbrains CLion](https://www.jetbrains.com/clion/)
       - [JetBrains学生免费授权计划](https://www.jetbrains.com/zh/student/)
    - [MinGW-W64 GCC-8.1.0 (x86_64-8.1.0-posix-seh-rt_v6-rev0)](http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download)
 
-## CMake File
+### CMake File
    ```
    cmake_minimum_required(VERSION 3.13)
    project(WebServer C)
@@ -53,13 +53,13 @@ The following is the illustration of the interactions between server and client:
    add_executable(WebServer main.c)
    ```
 
-## File Path
+### File Path
    For CLion Project: 
    ```
    ...\Internet_WWW_Assignment\WebServer\cmake-build-debug\
    ```
 
-## Reference
+### Reference
    - [HTTP/1.1 - W3C](https://www.w3.org/Protocols/HTTP/1.1/rfc2616bis/draft-lafon-rfc2616bis-03.html)
    - [ip(7) - Linux manual page](http://man7.org/linux/man-pages/man7/ip.7.html)
    - [\[linux\] c 实现简单的web服务器](https://blog.csdn.net/tzshlyt/article/details/53392556)
