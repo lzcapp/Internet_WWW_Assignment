@@ -1,4 +1,4 @@
-## Assignment 1
+## Assignment Description and Requirements
 
 Students are required to develop a Web Server by using Windows Socket
 Programming C++. The program should be able to serve multiple requests
