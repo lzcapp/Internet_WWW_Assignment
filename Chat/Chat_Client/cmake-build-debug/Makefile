@@ -122,32 +122,32 @@ Chat_Client/fast:
 	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/build
 .PHONY : Chat_Client/fast
 
-client.obj: client.c.obj
+client.obj: client.cpp.obj
 
 .PHONY : client.obj
 
 # target to build an object file
-client.c.obj:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.c.obj
-.PHONY : client.c.obj
+client.cpp.obj:
+	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.cpp.obj
+.PHONY : client.cpp.obj
 
-client.i: client.c.i
+client.i: client.cpp.i
 
 .PHONY : client.i
 
 # target to preprocess a source file
-client.c.i:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.c.i
-.PHONY : client.c.i
+client.cpp.i:
+	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.cpp.i
+.PHONY : client.cpp.i
 
-client.s: client.c.s
+client.s: client.cpp.s
 
 .PHONY : client.s
 
 # target to generate assembly for a file
-client.c.s:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.c.s
-.PHONY : client.c.s
+client.cpp.s:
+	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.cpp.s
+.PHONY : client.cpp.s
 
 # Help Target
 help:

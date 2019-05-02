@@ -122,32 +122,32 @@ Chat_Server/fast:
 	$(MAKE) -f CMakeFiles\Chat_Server.dir\build.make CMakeFiles/Chat_Server.dir/build
 .PHONY : Chat_Server/fast
 
-server.obj: server.c.obj
+server.obj: server.cpp.obj
 
 .PHONY : server.obj
 
 # target to build an object file
-server.c.obj:
-	$(MAKE) -f CMakeFiles\Chat_Server.dir\build.make CMakeFiles/Chat_Server.dir/server.c.obj
-.PHONY : server.c.obj
+server.cpp.obj:
+	$(MAKE) -f CMakeFiles\Chat_Server.dir\build.make CMakeFiles/Chat_Server.dir/server.cpp.obj
+.PHONY : server.cpp.obj
 
-server.i: server.c.i
+server.i: server.cpp.i
 
 .PHONY : server.i
 
 # target to preprocess a source file
-server.c.i:
-	$(MAKE) -f CMakeFiles\Chat_Server.dir\build.make CMakeFiles/Chat_Server.dir/server.c.i
-.PHONY : server.c.i
+server.cpp.i:
+	$(MAKE) -f CMakeFiles\Chat_Server.dir\build.make CMakeFiles/Chat_Server.dir/server.cpp.i
+.PHONY : server.cpp.i
 
-server.s: server.c.s
+server.s: server.cpp.s
 
 .PHONY : server.s
 
 # target to generate assembly for a file
-server.c.s:
-	$(MAKE) -f CMakeFiles\Chat_Server.dir\build.make CMakeFiles/Chat_Server.dir/server.c.s
-.PHONY : server.c.s
+server.cpp.s:
+	$(MAKE) -f CMakeFiles\Chat_Server.dir\build.make CMakeFiles/Chat_Server.dir/server.cpp.s
+.PHONY : server.cpp.s
 
 # Help Target
 help:
