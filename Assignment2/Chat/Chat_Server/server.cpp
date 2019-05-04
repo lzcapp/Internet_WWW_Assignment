@@ -98,11 +98,13 @@ DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
             printf("recv() Failed:%d\n", WSAGetLastError());
             return (DWORD) USER_ERROR;
         } else { // Connection Successful
-            printf("recv data from client:%s\n", recv_buf);
+            printf("Client say: %s\n", recv_buf);
         }
 
         char send_buf[MIN_BUFF];
-        sprintf(send_buf, "Alloha!");
+        printf("I say:  ");
+        gets(send_buf);
+        sprintf(send_buf, send_buf);
         send(sAccept, send_buf, (int) strlen(send_buf), 0);
     }
 
