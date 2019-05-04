@@ -75,7 +75,7 @@ int main() {
     }
 
     while (true) {
-        printf("I say: ");
+        printf("I say:  ");
         gets(szBuff);
 
         msg_len = send(connect_sock, szBuff, sizeof(szBuff), 0);
