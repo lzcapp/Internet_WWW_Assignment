@@ -86,22 +86,25 @@ int main() {
 
 DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
     auto sAccept = (SOCKET) (LPVOID) lparam;
-    char recv_buf[BUFF_SIZE];
 
-    // Clear the buffer
-    memset(recv_buf, 0, sizeof(recv_buf));
+    while (true) {
+        char recv_buf[BUFF_SIZE];
 
-    if (recv(sAccept, recv_buf, sizeof(recv_buf), 0) == SOCKET_ERROR)   //接收错误
-    {
-        printf("recv() Failed:%d\n", WSAGetLastError());
-        return (DWORD) USER_ERROR;
-    } else { // Connection Successful
-        printf("recv data from client:%s\n", recv_buf);
+        // Clear the buffer
+        memset(recv_buf, 0, sizeof(recv_buf));
+
+        if (recv(sAccept, recv_buf, sizeof(recv_buf), 0) == SOCKET_ERROR)   //接收错误
+        {
+            printf("recv() Failed:%d\n", WSAGetLastError());
+            return (DWORD) USER_ERROR;
+        } else { // Connection Successful
+            printf("recv data from client:%s\n", recv_buf);
+        }
+
+        char send_buf[MIN_BUFF];
+        sprintf(send_buf, "Alloha!");
+        send(sAccept, send_buf, (int) strlen(send_buf), 0);
     }
-
-    char send_buf[MIN_BUFF];
-    sprintf(send_buf, "Alloha!\r\n");
-    send(sAccept, send_buf, (int) strlen(send_buf), 0);
 
     closesocket(sAccept);
     return 0;

@@ -74,41 +74,43 @@ int main() {
         return -1;
     }
 
-    printf("input character string:\n");
-    gets(szBuff);
+    while (true) {
+        printf("I say: ");
+        gets(szBuff);
 
-    msg_len = send(connect_sock, szBuff, sizeof(szBuff), 0);
+        msg_len = send(connect_sock, szBuff, sizeof(szBuff), 0);
 
-    if (msg_len == SOCKET_ERROR){
-        fprintf(stderr, "send() failed with error %d\n", WSAGetLastError());
-        WSACleanup();
-        return -1;
+        if (msg_len == SOCKET_ERROR) {
+            fprintf(stderr, "send() failed with error %d\n", WSAGetLastError());
+            WSACleanup();
+            return -1;
+        }
+
+        if (msg_len == 0) {
+            printf("server closed connection\n");
+            closesocket(connect_sock);
+            WSACleanup();
+            return -1;
+        }
+
+        msg_len = recv(connect_sock, szBuff, sizeof(szBuff), 0);
+
+        if (msg_len == SOCKET_ERROR) {
+            fprintf(stderr, "send() failed with error %d\n", WSAGetLastError());
+            closesocket(connect_sock);
+            WSACleanup();
+            return -1;
+        }
+
+        if (msg_len == 0) {
+            printf("server closed connection\n");
+            closesocket(connect_sock);
+            WSACleanup();
+            return -1;
+        }
+
+        printf("Server say: %s\n", szBuff);
     }
-
-    if (msg_len == 0){
-        printf("server closed connection\n");
-        closesocket(connect_sock);
-        WSACleanup();
-        return -1;
-    }
-
-    msg_len = recv(connect_sock, szBuff, sizeof(szBuff), 0);
-
-    if (msg_len == SOCKET_ERROR){
-        fprintf(stderr, "send() failed with error %d\n", WSAGetLastError());
-        closesocket(connect_sock);
-        WSACleanup();
-        return -1;
-    }
-
-    if (msg_len == 0){
-        printf("server closed connection\n");
-        closesocket(connect_sock);
-        WSACleanup();
-        return -1;
-    }
-
-    printf("Echo from the server %s.\n", szBuff);
 
     closesocket(connect_sock);
     WSACleanup();
