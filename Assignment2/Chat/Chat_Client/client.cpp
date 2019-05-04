@@ -1,119 +1,121 @@
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
-
-#pragma comment(lib, "Ws2_32.lib")
-
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <winsock2.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <process.h>
+#include <cstdio>
+#include <cstdlib>
+#include <conio.h>
+#pragma comment(lib,"ws2_32.lib")
+#define RECV_OVER 1
+#define RECV_YET 0
+#define _CRT_SECURE_NO_WARNINGS
+#pragma warning (disable: 4996)
+char userName[16] = { 0 };
+int iStatus = RECV_YET;
 
-#define SERV_PORT 5019
 
-
-int main() {
-    char szBuff[100];
-    int msg_len;
-    //int addr_len;
-    struct sockaddr_in server_addr;
-    struct hostent *hp;
-    SOCKET connect_sock;
-    WSADATA wsaData;
-
-    char server_name[] = "127.0.0.1";
-    unsigned short port;
-    unsigned int addr;
-
-    port = SERV_PORT; // NOLINT(cert-err34-c)
-
-    if (WSAStartup(0x202, &wsaData) == SOCKET_ERROR){
-        // stderr: standard error are printed to the screen.
-        fprintf(stderr, "WSAStartup failed with error %d\n", WSAGetLastError());
-        //WSACleanup function terminates use of the Windows Sockets DLL.
-        WSACleanup();
-        return -1;
-    }
-
-    if (isalpha(server_name[0]))
-        hp = gethostbyname(server_name);
-    else{
-        addr = inet_addr(server_name);
-        hp = gethostbyaddr((char*)&addr, 4, AF_INET);
-    }
-
-    if (hp==nullptr)
+unsigned __stdcall ThreadRecv(void* param)
+{
+    char buf[128] = { 0 };
+    while (true)
     {
-        fprintf(stderr, "Cannot resolve address: %d\n", WSAGetLastError());
-        WSACleanup();
-        return -1;
-    }
-
-    //copy the resolved information into the sockaddr_in structure
-    memset(&server_addr, 0, sizeof(server_addr));
-    memcpy(&(server_addr.sin_addr), hp->h_addr, hp->h_length);
-    server_addr.sin_family = hp->h_addrtype;
-    server_addr.sin_port = htons(port);
-
-
-    connect_sock = socket(AF_INET,SOCK_STREAM, 0);	//TCp socket
-
-
-    if (connect_sock == INVALID_SOCKET){
-        fprintf(stderr, "socket() failed with error %d\n", WSAGetLastError());
-        WSACleanup();
-        return -1;
-    }
-
-    printf("Client connecting to: %s\n", hp->h_name);
-
-    if (connect(connect_sock, (struct sockaddr *)&server_addr, sizeof(server_addr))
-        == SOCKET_ERROR){
-        fprintf(stderr, "connect() failed with error %d\n", WSAGetLastError());
-        WSACleanup();
-        return -1;
-    }
-
-    while (true) {
-        printf("I say:  ");
-        gets(szBuff);
-
-        msg_len = send(connect_sock, szBuff, sizeof(szBuff), 0);
-
-        if (msg_len == SOCKET_ERROR) {
-            fprintf(stderr, "send() failed with error %d\n", WSAGetLastError());
-            WSACleanup();
-            return -1;
+        int ret = recv(*(SOCKET*)param, buf, sizeof(buf), 0);
+        if (ret == SOCKET_ERROR)
+        {
+            Sleep(500);
+            continue;
         }
-
-        if (msg_len == 0) {
-            printf("server closed connection\n");
-            closesocket(connect_sock);
-            WSACleanup();
-            return -1;
+        if (strlen(buf) != 0)
+        {
+            printf("%s\n", buf);
+            iStatus = RECV_OVER;
         }
-
-        msg_len = recv(connect_sock, szBuff, sizeof(szBuff), 0);
-
-        if (msg_len == SOCKET_ERROR) {
-            fprintf(stderr, "send() failed with error %d\n", WSAGetLastError());
-            closesocket(connect_sock);
-            WSACleanup();
-            return -1;
-        }
-
-        if (msg_len == 0) {
-            printf("server closed connection\n");
-            closesocket(connect_sock);
-            WSACleanup();
-            return -1;
-        }
-
-        printf("Server say: %s\n", szBuff);
+        else
+            Sleep(100);
     }
-
-    closesocket(connect_sock);
-    WSACleanup();
+    // return 0;
 }
 
-#pragma clang diagnostic pop
+//发送数据
+unsigned __stdcall ThreadSend(void* param)
+{
+    char buf[128] = { 0 };
+    int ret = 0;
+    while (true)
+    {
+        int c = getch();
+        if (c == 72 || c == 0 || c == 68)//为了显示美观，加一个无回显的读取字符函数
+            continue;                   //getch返回值我是经过实验得出如果是返回这几个值，则getch就会自动跳过，具体我也不懂。
+        printf("%s: ", userName);
+        gets(buf);
+        ret = send(*(SOCKET*)param, buf, sizeof(buf), 0);
+        if (ret == SOCKET_ERROR)
+            return 1;
+    }
+    return 0;
+}
+
+//连接服务器
+int ConnectServer()
+{
+    WSADATA wsaData = { 0 };//存放套接字信息
+    auto ClientSocket = INVALID_SOCKET;//客户端套接字
+    SOCKADDR_IN ServerAddr = { 0 };//服务端地址
+    USHORT uPort = 18000;//服务端端口
+    //初始化套接字
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData))
+    {
+        printf("WSAStartup failed with error code: %d\n", WSAGetLastError());
+        return -1;
+    }
+    //判断套接字版本
+    if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
+    {
+        printf("wVersion was not 2.2\n");
+        return -1;
+    }
+    //创建套接字
+    ClientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (ClientSocket == INVALID_SOCKET)
+    {
+        printf("socket failed with error code: %d\n", WSAGetLastError());
+        return -1;
+    }
+    //输入服务器IP
+    printf("Please input server IP:");
+    char IP[32] = { 0 };
+    //gets(IP);
+    strcpy(IP, "127.0.0.1");
+    //设置服务器地址
+    ServerAddr.sin_family = AF_INET;
+    ServerAddr.sin_port = htons(uPort);//服务器端口
+    ServerAddr.sin_addr.S_un.S_addr = inet_addr(IP);//服务器地址
+
+    printf("connecting......\n");
+    //连接服务器
+    if (SOCKET_ERROR == connect(ClientSocket, (SOCKADDR*)&ServerAddr, sizeof(ServerAddr)))
+    {
+        printf("connect failed with error code: %d\n", WSAGetLastError());
+        closesocket(ClientSocket);
+        WSACleanup();
+        return -1;
+    }
+    printf("Connecting server successfully IP:%s Port:%d\n",
+           IP, htons(ServerAddr.sin_port));
+    printf("Please input your UserName: ");
+    gets(userName);
+    send(ClientSocket, userName, sizeof(userName), 0);
+    printf("\n\n");
+    _beginthreadex(nullptr, 0, ThreadRecv, &ClientSocket, 0, nullptr); //启动接收和发送消息线程
+    _beginthreadex(nullptr, 0, ThreadSend, &ClientSocket, 0, nullptr);
+    for (int k = 0;k < 1000;k++)
+        Sleep(10000000);
+    closesocket(ClientSocket);
+    WSACleanup();
+    return 0;
+}
+
+int main()
+{
+    ConnectServer(); //连接服务器
+    return 0;
+}

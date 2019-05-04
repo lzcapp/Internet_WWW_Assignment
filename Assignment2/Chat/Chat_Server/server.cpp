@@ -1,115 +1,223 @@
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
-
-#pragma comment(lib, "Ws2_32.lib")
-
 #include <winsock2.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <process.h>
+#include <cstdio>
+#include <cstdlib>
 
-#define SERV_PORT 5019
-#define USER_ERROR -1
-#define BUFF_SIZE 1024
-#define MIN_BUFF 128
+#pragma comment(lib, "ws2_32.lib")
+#define _CRT_SECURE_NO_WARNINGS
+#pragma warning (disable: 4996)
+#define SEND_OVER 1                          //已经转发消息
+#define SEND_YET  0                          //还没转发消息
 
-char serverAddr[32];
-char serverPort[5];
-char clientAddr[32];
-char clientPort[5];
+int g_iStatus = SEND_YET;
+SOCKET g_ServerSocket = INVALID_SOCKET;      //服务端套接字
+SOCKADDR_IN g_ClientAddr = {0};            //客户端地址
+int g_iClientAddrLen = sizeof(g_ClientAddr);
+bool g_bCheckConnect = false;                //检查连接情况
+HANDLE g_hRecv1 = nullptr;
+HANDLE g_hRecv2 = nullptr;
+//客户端信息结构体
+typedef struct _Client {
+    SOCKET sClient;      //客户端套接字
+    char buf[128];       //数据缓冲区
+    char userName[16];   //客户端用户名
+    char IP[20];         //客户端IP
+    UINT_PTR flag;       //标记客户端，用来区分不同的客户端
+} Client;
 
-DWORD WINAPI SimpleHTTPServer(LPVOID lparam);
+Client g_Client[2] = {0};                  //创建一个客户端结构体
 
-int main() {
-    WSADATA wsaData;
-    SOCKET sListen, sAccept;        //服务器监听套接字，连接套接字
-    int serverport = SERV_PORT;     //服务器端口号
-    struct sockaddr_in ser, cli;    //服务器地址，客户端地址
-    int iLen;
+//发送数据线程
+unsigned __stdcall ThreadSend(void *param) {
+    int ret = 0;
+    int flag = *(int *) param;
+    auto client = INVALID_SOCKET;                 //创建一个临时套接字来存放要转发的客户端套接字
+    char temp[128] = {0};                         //创建一个临时的数据缓冲区，用来存放接收到的数据
+    memcpy(temp, g_Client[!flag].buf, sizeof(temp));
+    sprintf(g_Client[flag].buf, "%s: %s", g_Client[!flag].userName, temp);//添加一个用户名头
 
-    printf("-------------------\n");
-    printf("Server Listening...\n");
-    printf("-------------------\n");
-
-    // Load Winsock protocol
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        printf("Failed to load Winsock.\n");
-        return USER_ERROR;
+    if (strlen(temp) != 0 && g_iStatus == SEND_YET) { //如果数据不为空且还没转发则转发
+        ret = send(g_Client[flag].sClient, g_Client[flag].buf, sizeof(g_Client[flag].buf), 0);
     }
-
-    // Create socket for listening to requests
-    sListen = socket(AF_INET, SOCK_STREAM, 0);
-    if (sListen == INVALID_SOCKET) {
-        printf("Create socket() Failed: %d\n", WSAGetLastError());
-        return USER_ERROR;
+    if (ret == SOCKET_ERROR) {
+        return 1;
     }
+    g_iStatus = SEND_OVER;   //转发成功后设置状态为已转发
+    return 0;
+}
 
-    // Create the address for server
-    ser.sin_family = AF_INET;
-    ser.sin_port = htons((u_short) serverport);     //服务器端口号
-    ser.sin_addr.s_addr = htonl(INADDR_ANY);        //服务器IP地址，默认使用本机IP
-
-    //Bind listening socket to the server address
-    if (bind(sListen, (LPSOCKADDR) &ser, sizeof(ser)) == SOCKET_ERROR) {
-        printf("bind() failed: %d\n", WSAGetLastError());
-        return USER_ERROR;
+//接受数据
+unsigned __stdcall ThreadRecv(void *param) {
+    auto client = INVALID_SOCKET;
+    int flag = 0;
+    if (*(int *) param == g_Client[0].flag)            //判断是哪个客户端发来的消息
+    {
+        client = g_Client[0].sClient;
+        flag = 0;
+    } else if (*(int *) param == g_Client[1].flag) {
+        client = g_Client[1].sClient;
+        flag = 1;
     }
-
-    // Listening via the socket
-    if (listen(sListen, 5) == SOCKET_ERROR) {
-        printf("listen() failed: %d\n", WSAGetLastError());
-        return USER_ERROR;
-    }
-
-    // Wait for client's request
+    char temp[128] = {0};  //临时数据缓冲区
     while (true) {
-        // Accept the request
-        iLen = sizeof(cli);
-        sAccept = accept(sListen, (struct sockaddr *) &cli, &iLen);
-        if (sAccept == INVALID_SOCKET) {
-            printf("accept() Failed:%d\n", WSAGetLastError());
-            break;
+        memset(temp, 0, sizeof(temp));
+        int ret = recv(client, temp, sizeof(temp), 0); //接收数据
+        if (ret == SOCKET_ERROR) {
+            continue;
         }
-        sprintf(serverAddr, "%s", inet_ntoa(ser.sin_addr));
-        sprintf(serverPort, "%d", ntohs(ser.sin_port));
-        sprintf(clientAddr, "%s", inet_ntoa(cli.sin_addr));
-        sprintf(clientPort, "%d", ntohs(cli.sin_port));
-
-        DWORD ThreadID;
-        CreateThread(nullptr, 0, SimpleHTTPServer, (LPVOID) sAccept, 0, &ThreadID);
+        g_iStatus = SEND_YET;                                //设置转发状态为未转发
+        flag = client == g_Client[0].sClient ? 1 : 0;        //这个要设置，否则会出现自己给自己发消息的BUG
+        memcpy(g_Client[!flag].buf, temp, sizeof(g_Client[!flag].buf));
+        _beginthreadex(nullptr, 0, ThreadSend, &flag, 0, nullptr); //开启一个转发线程,flag标记着要转发给哪个客户端
+        //这里也可能是导致CPU使用率上升的原因。
     }
-    closesocket(sListen);
+
+    return 0;
+}
+
+//管理连接
+unsigned __stdcall ThreadManager(void *param) {
+    while (true) {
+        if (send(g_Client[0].sClient, "", sizeof(""), 0) == SOCKET_ERROR) {
+            if (g_Client[0].sClient != 0) {
+                CloseHandle(g_hRecv1); //这里关闭了线程句柄，但是测试结果断开连C/S接后CPU仍然疯涨
+                CloseHandle(g_hRecv2);
+                printf("Disconnect from IP: %s,UserName: %s\n", g_Client[0].IP, g_Client[0].userName);
+                closesocket(g_Client[0].sClient);   //这里简单的判断：若发送消息失败，则认为连接中断(其原因有多种)，关闭该套接字
+                g_Client[0] = {0};
+            }
+        }
+        if (send(g_Client[1].sClient, "", sizeof(""), 0) == SOCKET_ERROR) {
+            if (g_Client[1].sClient != 0) {
+                CloseHandle(g_hRecv1);
+                CloseHandle(g_hRecv2);
+                printf("Disconnect from IP: %s,UserName: %s\n", g_Client[1].IP, g_Client[1].userName);
+                closesocket(g_Client[1].sClient);
+                g_Client[1] = {0};
+            }
+        }
+        Sleep(2000); //2s检查一次
+    }
+
+    return 0;
+}
+
+//接受请求
+unsigned __stdcall ThreadAccept(void *param) {
+
+    int i = 0;
+    int temp1 = 0, temp2 = 0;
+    _beginthreadex(nullptr, 0, ThreadManager, nullptr, 0, nullptr);
+    while (true) {
+        while (i < 2) {
+            if (g_Client[i].flag != 0) {
+                ++i;
+                continue;
+            }
+            //如果有客户端申请连接就接受连接
+            if ((g_Client[i].sClient = accept(g_ServerSocket, (SOCKADDR *) &g_ClientAddr, &g_iClientAddrLen)) ==
+                INVALID_SOCKET) {
+                printf("accept failed with error code: %d\n", WSAGetLastError());
+                closesocket(g_ServerSocket);
+                WSACleanup();
+                return -1;
+            }
+            recv(g_Client[i].sClient, g_Client[i].userName, sizeof(g_Client[i].userName), 0); //接收用户名
+            printf("Successfuuly got a connection from IP:%s ,Port: %d,UerName: %s\n",
+                   inet_ntoa(g_ClientAddr.sin_addr), htons(g_ClientAddr.sin_port), g_Client[i].userName);
+            memcpy(g_Client[i].IP, inet_ntoa(g_ClientAddr.sin_addr), sizeof(g_Client[i].IP)); //记录客户端IP
+            g_Client[i].flag = g_Client[i].sClient; //不同的socke有不同UINT_PTR类型的数字来标识
+            i++;
+        }
+        i = 0;
+
+        if (g_Client[0].flag != 0 && g_Client[1].flag != 0)                  //当两个用户都连接上服务器后才进行消息转发
+        {
+            if (g_Client[0].flag != temp1)     //每次断开一个连接后再次连上会新开一个线程，导致cpu使用率上升,所以要关掉旧的
+            {
+                if (g_hRecv1) {                  //这里关闭了线程句柄，但是测试结果断开连C/S接后CPU仍然疯涨
+                    CloseHandle(g_hRecv1);
+                }
+                g_hRecv1 = (HANDLE) _beginthreadex(nullptr, 0, ThreadRecv, &g_Client[0].flag, 0, nullptr); //开启2个接收消息的线程
+            }
+            if (g_Client[1].flag != temp2) {
+                if (g_hRecv2) {
+                    CloseHandle(g_hRecv2);
+                }
+                g_hRecv2 = (HANDLE) _beginthreadex(nullptr, 0, ThreadRecv, &g_Client[1].flag, 0, nullptr);
+            }
+        }
+
+        temp1 = g_Client[0].flag; //防止ThreadRecv线程多次开启
+        temp2 = g_Client[1].flag;
+
+        Sleep(3000);
+    }
+
+    return 0;
+}
+
+//启动服务器
+int StartServer() {
+    //存放套接字信息的结构
+    WSADATA wsaData = {0};
+    SOCKADDR_IN ServerAddr = {0};             //服务端地址
+    USHORT uPort = 18000;                       //服务器监听端口
+
+    //初始化套接字
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData)) {
+        printf("WSAStartup failed with error code: %d\n", WSAGetLastError());
+        return -1;
+    }
+    //判断版本
+    if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2) {
+        printf("wVersion was not 2.2\n");
+        return -1;
+    }
+    //创建套接字
+    g_ServerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (g_ServerSocket == INVALID_SOCKET) {
+        printf("socket failed with error code: %d\n", WSAGetLastError());
+        return -1;
+    }
+
+    //设置服务器地址
+    ServerAddr.sin_family = AF_INET;//连接方式
+    ServerAddr.sin_port = htons(uPort);//服务器监听端口
+    ServerAddr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);//任何客户端都能连接这个服务器
+
+    //绑定服务器
+    if (SOCKET_ERROR == bind(g_ServerSocket, (SOCKADDR *) &ServerAddr, sizeof(ServerAddr))) {
+        printf("bind failed with error code: %d\n", WSAGetLastError());
+        closesocket(g_ServerSocket);
+        return -1;
+    }
+    //设置监听客户端连接数
+    if (SOCKET_ERROR == listen(g_ServerSocket, 20000)) {
+        printf("listen failed with error code: %d\n", WSAGetLastError());
+        closesocket(g_ServerSocket);
+        WSACleanup();
+        return -1;
+    }
+
+    _beginthreadex(nullptr, 0, ThreadAccept, nullptr, 0, nullptr);
+    for (int k = 0; k < 100; k++) { //让主线程休眠，不让它关闭TCP连接.
+        Sleep(10000000);
+    }
+
+    //关闭套接字
+    for (auto &j : g_Client) {
+        if (j.sClient != INVALID_SOCKET) {
+            closesocket(j.sClient);
+        }
+    }
+    closesocket(g_ServerSocket);
     WSACleanup();
     return 0;
 }
 
-DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
-    auto sAccept = (SOCKET) (LPVOID) lparam;
+int main() {
+    StartServer(); //启动服务器
 
-    while (true) {
-        char recv_buf[BUFF_SIZE];
-
-        // Clear the buffer
-        memset(recv_buf, 0, sizeof(recv_buf));
-
-        if (recv(sAccept, recv_buf, sizeof(recv_buf), 0) == SOCKET_ERROR)   //接收错误
-        {
-            printf("recv() Failed:%d\n", WSAGetLastError());
-            return (DWORD) USER_ERROR;
-        } else { // Connection Successful
-            printf("Client say: %s\n", recv_buf);
-        }
-
-        char send_buf[MIN_BUFF];
-        printf("I say:  ");
-        gets(send_buf);
-        sprintf(send_buf, send_buf);
-        send(sAccept, send_buf, (int) strlen(send_buf), 0);
-    }
-
-    closesocket(sAccept);
     return 0;
 }
-
-#pragma clang diagnostic pop
