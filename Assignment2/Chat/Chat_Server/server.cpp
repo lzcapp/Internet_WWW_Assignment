@@ -1,4 +1,5 @@
 #pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -10,11 +11,15 @@
 
 #define SERV_PORT 5019
 #define USER_ERROR -1
+#define BUFF_SIZE 1024
+#define MIN_BUFF 128
 
 char serverAddr[32];
 char serverPort[5];
 char clientAddr[32];
 char clientPort[5];
+
+DWORD WINAPI SimpleHTTPServer(LPVOID lparam);
 
 int main() {
     WSADATA wsaData;
@@ -71,12 +76,34 @@ int main() {
         sprintf(clientAddr, "%s", inet_ntoa(cli.sin_addr));
         sprintf(clientPort, "%d", ntohs(cli.sin_port));
 
-        // Create thread for client browser's request
-        // DWORD ThreadID;
-        // CreateThread(NULL, 0, SimpleHTTPServer, (LPVOID) sAccept, 0, &ThreadID);
+        DWORD ThreadID;
+        CreateThread(nullptr, 0, SimpleHTTPServer, (LPVOID) sAccept, 0, &ThreadID);
     }
     closesocket(sListen);
     WSACleanup();
+    return 0;
+}
+
+DWORD WINAPI SimpleHTTPServer(LPVOID lparam) {
+    auto sAccept = (SOCKET) (LPVOID) lparam;
+    char recv_buf[BUFF_SIZE];
+
+    // Clear the buffer
+    memset(recv_buf, 0, sizeof(recv_buf));
+
+    if (recv(sAccept, recv_buf, sizeof(recv_buf), 0) == SOCKET_ERROR)   //接收错误
+    {
+        printf("recv() Failed:%d\n", WSAGetLastError());
+        return (DWORD) USER_ERROR;
+    } else { // Connection Successful
+        printf("recv data from client:%s\n", recv_buf);
+    }
+
+    char send_buf[MIN_BUFF];
+    sprintf(send_buf, "Alloha!\r\n");
+    send(sAccept, send_buf, (int) strlen(send_buf), 0);
+
+    closesocket(sAccept);
     return 0;
 }
 

@@ -1,10 +1,15 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+
+#pragma comment(lib, "Ws2_32.lib")
+
 #include <winsock2.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-
-#define DEFAULT_PORT 5019
+#define SERV_PORT 5019
 
 
 int main() {
@@ -16,14 +21,13 @@ int main() {
     SOCKET connect_sock;
     WSADATA wsaData;
 
-    char *server_name = nullptr;
-    unsigned short port = DEFAULT_PORT;
+    char server_name[] = "127.0.0.1";
+    unsigned short port;
     unsigned int addr;
 
-    strcpy(server_name, "127.0.0.1");
-    port = DEFAULT_PORT; // NOLINT(cert-err34-c)
+    port = SERV_PORT; // NOLINT(cert-err34-c)
 
-    if (WSAStartup(0x202, &wsaData) == SOCKET_ERROR) {
+    if (WSAStartup(0x202, &wsaData) == SOCKET_ERROR){
         // stderr: standard error are printed to the screen.
         fprintf(stderr, "WSAStartup failed with error %d\n", WSAGetLastError());
         //WSACleanup function terminates use of the Windows Sockets DLL.
@@ -31,14 +35,15 @@ int main() {
         return -1;
     }
 
-    if (isalpha(server_name[0])) {
+    if (isalpha(server_name[0]))
         hp = gethostbyname(server_name);
-    } else {
+    else{
         addr = inet_addr(server_name);
-        hp = gethostbyaddr((char *) &addr, 4, AF_INET);
+        hp = gethostbyaddr((char*)&addr, 4, AF_INET);
     }
 
-    if (hp == NULL) {
+    if (hp==nullptr)
+    {
         fprintf(stderr, "Cannot resolve address: %d\n", WSAGetLastError());
         WSACleanup();
         return -1;
@@ -51,10 +56,10 @@ int main() {
     server_addr.sin_port = htons(port);
 
 
-    connect_sock = socket(AF_INET, SOCK_STREAM, 0);    //TCp socket
+    connect_sock = socket(AF_INET,SOCK_STREAM, 0);	//TCp socket
 
 
-    if (connect_sock == INVALID_SOCKET) {
+    if (connect_sock == INVALID_SOCKET){
         fprintf(stderr, "socket() failed with error %d\n", WSAGetLastError());
         WSACleanup();
         return -1;
@@ -62,26 +67,25 @@ int main() {
 
     printf("Client connecting to: %s\n", hp->h_name);
 
-    if (connect(connect_sock, (struct sockaddr *) &server_addr, sizeof(server_addr))
-        == SOCKET_ERROR) {
+    if (connect(connect_sock, (struct sockaddr *)&server_addr, sizeof(server_addr))
+        == SOCKET_ERROR){
         fprintf(stderr, "connect() failed with error %d\n", WSAGetLastError());
         WSACleanup();
         return -1;
     }
-
 
     printf("input character string:\n");
     gets(szBuff);
 
     msg_len = send(connect_sock, szBuff, sizeof(szBuff), 0);
 
-    if (msg_len == SOCKET_ERROR) {
+    if (msg_len == SOCKET_ERROR){
         fprintf(stderr, "send() failed with error %d\n", WSAGetLastError());
         WSACleanup();
         return -1;
     }
 
-    if (msg_len == 0) {
+    if (msg_len == 0){
         printf("server closed connection\n");
         closesocket(connect_sock);
         WSACleanup();
@@ -90,14 +94,14 @@ int main() {
 
     msg_len = recv(connect_sock, szBuff, sizeof(szBuff), 0);
 
-    if (msg_len == SOCKET_ERROR) {
+    if (msg_len == SOCKET_ERROR){
         fprintf(stderr, "send() failed with error %d\n", WSAGetLastError());
         closesocket(connect_sock);
         WSACleanup();
         return -1;
     }
 
-    if (msg_len == 0) {
+    if (msg_len == 0){
         printf("server closed connection\n");
         closesocket(connect_sock);
         WSACleanup();
@@ -109,3 +113,5 @@ int main() {
     closesocket(connect_sock);
     WSACleanup();
 }
+
+#pragma clang diagnostic pop
