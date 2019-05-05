@@ -1,64 +1,69 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
-
 #include <winsock2.h>
 #include <process.h>
 #include <cstdio>
 #include <cstdlib>
 
 #pragma comment(lib, "ws2_32.lib")
-#pragma warning (disable: 4996)
 
-#define SEND_OVER 1                          //已经转发消息
-#define SEND_YET  0                          //还没转发消息
+#pragma warning (disable: 4996)
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
+#define SEND_OVER true
+#define SEND_YET  false
 
 int g_iStatus = SEND_YET;
-auto g_ServerSocket = INVALID_SOCKET;      //服务端套接字
-SOCKADDR_IN g_ClientAddr = {0};            //客户端地址
+auto g_ServerSocket = INVALID_SOCKET;
+SOCKADDR_IN g_ClientAddr = {0};
 int g_iClientAddrLen = sizeof(g_ClientAddr);
-bool g_bCheckConnect = false;                //检查连接情况
+// bool g_bCheckConnect = false;
 HANDLE g_hRecv1 = nullptr;
 HANDLE g_hRecv2 = nullptr;
 
 
 typedef struct _Client {
-    SOCKET sClient;      //客户端套接字
-    char buf[128];       //数据缓冲区
-    char userName[16];   //客户端用户名
-    char IP[20];         //客户端IP
-    UINT_PTR flag;       //标记客户端，用来区分不同的客户端
+    SOCKET sClient;
+    char buf[128];
+    char userName[16];
+    char IP[20];
+    UINT_PTR flag;
 } Client;
 
-Client g_Client[2] = {0};                  //创建一个客户端结构体
+Client g_Client[2] = {0};
 
 unsigned __stdcall ThreadSend(void *param) {
     int ret = 0;
     int flag = *(int *) param;
-    auto client = INVALID_SOCKET;                 //创建一个临时套接字来存放要转发的客户端套接字
-    char temp[128] = {0};                         //创建一个临时的数据缓冲区，用来存放接收到的数据
+    // auto client = INVALID_SOCKET;
+    char temp[128] = {0};
     memcpy(temp, g_Client[!flag].buf, sizeof(temp));
-    sprintf(g_Client[flag].buf, "%s: %s", g_Client[!flag].userName, temp);//添加一个用户名头
+    sprintf(g_Client[flag].buf, "%s: %s", g_Client[!flag].userName, temp);
 
-    if (strlen(temp) != 0 && g_iStatus == SEND_YET) { //如果数据不为空且还没转发则转发
+    if (strlen(temp) != 0 && g_iStatus == SEND_YET) {
         ret = send(g_Client[flag].sClient, g_Client[flag].buf, sizeof(g_Client[flag].buf), 0);
     }
     if (ret == SOCKET_ERROR) {
         return 1;
     }
-    g_iStatus = SEND_OVER;   //转发成功后设置状态为已转发
+    g_iStatus = SEND_OVER;
     return 0;
 }
 
 unsigned __stdcall ThreadRecv(void *param) {
     auto client = INVALID_SOCKET;
     int flag = 0;
-    if (*(int *) param == g_Client[0].flag)            //判断是哪个客户端发来的消息
+    if (*(int *) param == g_Client[0].flag)
     {
         client = g_Client[0].sClient;
-        flag = 0;
+        // flag = 0;
     } else if (*(int *) param == g_Client[1].flag) {
         client = g_Client[1].sClient;
-        flag = 1;
+        // flag = 1;
     }
     char temp[128] = {0};  //临时数据缓冲区
     while (true) {
@@ -73,8 +78,7 @@ unsigned __stdcall ThreadRecv(void *param) {
         _beginthreadex(nullptr, 0, ThreadSend, &flag, 0, nullptr); //开启一个转发线程,flag标记着要转发给哪个客户端
         //这里也可能是导致CPU使用率上升的原因。
     }
-
-    return 0;
+    // return 0;
 }
 
 unsigned __stdcall ThreadManager(void *param) {
@@ -99,8 +103,7 @@ unsigned __stdcall ThreadManager(void *param) {
         }
         Sleep(2000); //2s检查一次
     }
-
-    return 0;
+    // return 0;
 }
 
 unsigned __stdcall ThreadAccept(void *param) {
@@ -153,8 +156,7 @@ unsigned __stdcall ThreadAccept(void *param) {
 
         Sleep(3000);
     }
-
-    return 0;
+    // return 0;
 }
 
 int StartServer() {
@@ -216,9 +218,9 @@ int StartServer() {
 }
 
 int main() {
-    StartServer(); //启动服务器
-
+    StartServer();
     return 0;
 }
 
+#pragma clang diagnostic pop
 #pragma clang diagnostic pop
