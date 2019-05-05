@@ -1,22 +1,26 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+
 #include <winsock2.h>
 #include <process.h>
 #include <cstdio>
 #include <cstdlib>
 
 #pragma comment(lib, "ws2_32.lib")
-#define _CRT_SECURE_NO_WARNINGS
 #pragma warning (disable: 4996)
+
 #define SEND_OVER 1                          //已经转发消息
 #define SEND_YET  0                          //还没转发消息
 
 int g_iStatus = SEND_YET;
-SOCKET g_ServerSocket = INVALID_SOCKET;      //服务端套接字
+auto g_ServerSocket = INVALID_SOCKET;      //服务端套接字
 SOCKADDR_IN g_ClientAddr = {0};            //客户端地址
 int g_iClientAddrLen = sizeof(g_ClientAddr);
 bool g_bCheckConnect = false;                //检查连接情况
 HANDLE g_hRecv1 = nullptr;
 HANDLE g_hRecv2 = nullptr;
-//客户端信息结构体
+
+
 typedef struct _Client {
     SOCKET sClient;      //客户端套接字
     char buf[128];       //数据缓冲区
@@ -27,7 +31,6 @@ typedef struct _Client {
 
 Client g_Client[2] = {0};                  //创建一个客户端结构体
 
-//发送数据线程
 unsigned __stdcall ThreadSend(void *param) {
     int ret = 0;
     int flag = *(int *) param;
@@ -46,7 +49,6 @@ unsigned __stdcall ThreadSend(void *param) {
     return 0;
 }
 
-//接受数据
 unsigned __stdcall ThreadRecv(void *param) {
     auto client = INVALID_SOCKET;
     int flag = 0;
@@ -75,7 +77,6 @@ unsigned __stdcall ThreadRecv(void *param) {
     return 0;
 }
 
-//管理连接
 unsigned __stdcall ThreadManager(void *param) {
     while (true) {
         if (send(g_Client[0].sClient, "", sizeof(""), 0) == SOCKET_ERROR) {
@@ -102,7 +103,6 @@ unsigned __stdcall ThreadManager(void *param) {
     return 0;
 }
 
-//接受请求
 unsigned __stdcall ThreadAccept(void *param) {
 
     int i = 0;
@@ -157,7 +157,6 @@ unsigned __stdcall ThreadAccept(void *param) {
     return 0;
 }
 
-//启动服务器
 int StartServer() {
     //存放套接字信息的结构
     WSADATA wsaData = {0};
@@ -221,3 +220,5 @@ int main() {
 
     return 0;
 }
+
+#pragma clang diagnostic pop
