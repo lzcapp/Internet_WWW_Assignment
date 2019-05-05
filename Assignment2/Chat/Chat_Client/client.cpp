@@ -1,20 +1,23 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
-#pragma comment(lib, "ws2_32.lib")
-
 #include <winsock2.h>
 #include <process.h>
 #include <cstdio>
 #include <cstdlib>
 #include <conio.h>
 
-#define RECV_OVER 1
-#define RECV_YET 0
+#pragma comment(lib, "ws2_32.lib")
 
 #pragma warning (disable: 4996)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+
+// #define RECV_OVER 1
+// #define RECV_YET 0
+
 char userName[16] = {0};
-int iStatus = RECV_YET;
+// int iStatus = RECV_YET;
 
 
 unsigned __stdcall ThreadRecv(void *param) {
@@ -27,7 +30,7 @@ unsigned __stdcall ThreadRecv(void *param) {
         }
         if (strlen(buf) != 0) {
             printf("%s\n", buf);
-            iStatus = RECV_OVER;
+            // iStatus = RECV_OVER;
         } else {
             Sleep(100);
         }
@@ -51,13 +54,16 @@ unsigned __stdcall ThreadSend(void *param) {
             return 1;
         }
     }
-    return 0;
+    // return 0;
 }
 
 //连接服务器
 int ConnectServer() {
     WSADATA wsaData = {0};//存放套接字信息
+    #pragma clang diagnostic push
+    #pragma ide diagnostic ignored "UnusedValue"
     auto ClientSocket = INVALID_SOCKET;//客户端套接字
+    #pragma clang diagnostic pop
     SOCKADDR_IN ServerAddr = {0};//服务端地址
     USHORT uPort = 18000;//服务端端口
     //初始化套接字
@@ -115,4 +121,5 @@ int main() {
     return 0;
 }
 
+#pragma clang diagnostic pop
 #pragma clang diagnostic pop
