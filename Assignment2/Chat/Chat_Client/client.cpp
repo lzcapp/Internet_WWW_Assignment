@@ -1,10 +1,12 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+#pragma comment(lib, "ws2_32.lib")
+
 #include <winsock2.h>
 #include <process.h>
 #include <cstdio>
 #include <cstdlib>
 #include <conio.h>
-
-#pragma comment(lib, "ws2_32.lib")
 
 #define RECV_OVER 1
 #define RECV_YET 0
@@ -45,8 +47,9 @@ unsigned __stdcall ThreadSend(void *param) {
         printf("%s: ", userName);
         gets(buf);
         ret = send(*(SOCKET *) param, buf, sizeof(buf), 0);
-        if (ret == SOCKET_ERROR)
+        if (ret == SOCKET_ERROR) {
             return 1;
+        }
     }
     return 0;
 }
@@ -111,3 +114,5 @@ int main() {
     ConnectServer(); //连接服务器
     return 0;
 }
+
+#pragma clang diagnostic pop
