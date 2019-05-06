@@ -42,7 +42,10 @@ unsigned __stdcall ThreadSend(void *param) {
     // auto client = INVALID_SOCKET;
     char temp[128] = {0};
     memcpy(temp, g_Client[!flag].buf, sizeof(temp));
-    sprintf(g_Client[flag].buf, "%s: %s", g_Client[!flag].userName, temp);
+    // sprintf(g_Client[flag].buf, "%s: %s", g_Client[!flag].userName, temp);
+
+    sprintf(g_Client[flag].buf, "%s", temp);
+    printf("%s\n", g_Client[flag].buf);
 
     if (strlen(temp) != 0 && g_iStatus == HAVENOT_SEND) {
         ret = send(g_Client[flag].sClient, g_Client[flag].buf, sizeof(g_Client[flag].buf), 0);
@@ -128,20 +131,20 @@ unsigned __stdcall ThreadAccept(void *param) {
             printf("Successfuuly got a connection from IP: %s, Port: %d, UserName: %s\n", inet_ntoa(g_ClientAddr.sin_addr), htons(g_ClientAddr.sin_port), g_Client[i].userName);
             memcpy(g_Client[i].IP, inet_ntoa(g_ClientAddr.sin_addr), sizeof(g_Client[i].IP)); //记录客户端IP
             g_Client[i].flag = g_Client[i].sClient; //不同的socke有不同UINT_PTR类型的数字来标识
-            if (i != 0) {
-                int flag_A = i;
-                int flag_B = !i;
-                char msg_A[128];
-                char msg_B[128];
-                strcat(msg_A, "MY NAME IS:");
-                strcat(msg_A, g_Client[flag_A].userName);
-                memcpy(g_Client[flag_A].buf, msg_B, sizeof(g_Client[flag_A].buf));
-                strcat(msg_B, "MY NAME IS:");
-                strcat(msg_B, g_Client[flag_B].userName);
-                memcpy(g_Client[flag_B].buf, msg_A, sizeof(g_Client[flag_B].buf));
-                send(g_Client[flag_A].sClient, g_Client[flag_A].buf, sizeof(g_Client[flag_A].buf), 0);
-                send(g_Client[flag_B].sClient, g_Client[flag_B].buf, sizeof(g_Client[flag_B].buf), 0);
-            }
+//            if (i != 0) {
+//                int flag_A = i;
+//                int flag_B = !i;
+//                char msg_A[128];
+//                char msg_B[128];
+//                strcat(msg_A, "MY NAME IS:");
+//                strcat(msg_A, g_Client[flag_A].userName);
+//                memcpy(g_Client[flag_A].buf, msg_B, sizeof(g_Client[flag_A].buf));
+//                strcat(msg_B, "MY NAME IS:");
+//                strcat(msg_B, g_Client[flag_B].userName);
+//                memcpy(g_Client[flag_B].buf, msg_A, sizeof(g_Client[flag_B].buf));
+//                send(g_Client[flag_A].sClient, g_Client[flag_A].buf, sizeof(g_Client[flag_A].buf), 0);
+//                send(g_Client[flag_B].sClient, g_Client[flag_B].buf, sizeof(g_Client[flag_B].buf), 0);
+//            }
             i++;
         }
         i = 0;

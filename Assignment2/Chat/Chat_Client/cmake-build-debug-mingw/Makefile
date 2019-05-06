@@ -50,7 +50,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-release-mingw
+CMAKE_BINARY_DIR = C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-debug-mingw
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -79,9 +79,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-release-mingw\CMakeFiles C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-release-mingw\CMakeFiles\progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-debug-mingw\CMakeFiles C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-debug-mingw\CMakeFiles\progress.marks
 	$(MAKE) -f CMakeFiles\Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-release-mingw\CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-debug-mingw\CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -122,32 +122,32 @@ Chat_Client/fast:
 	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/build
 .PHONY : Chat_Client/fast
 
-des.obj: des.cpp.obj
+client.obj: client.cpp.obj
 
-.PHONY : des.obj
+.PHONY : client.obj
 
 # target to build an object file
-des.cpp.obj:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/des.cpp.obj
-.PHONY : des.cpp.obj
+client.cpp.obj:
+	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.cpp.obj
+.PHONY : client.cpp.obj
 
-des.i: des.cpp.i
+client.i: client.cpp.i
 
-.PHONY : des.i
+.PHONY : client.i
 
 # target to preprocess a source file
-des.cpp.i:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/des.cpp.i
-.PHONY : des.cpp.i
+client.cpp.i:
+	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.cpp.i
+.PHONY : client.cpp.i
 
-des.s: des.cpp.s
+client.s: client.cpp.s
 
-.PHONY : des.s
+.PHONY : client.s
 
 # target to generate assembly for a file
-des.cpp.s:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/des.cpp.s
-.PHONY : des.cpp.s
+client.cpp.s:
+	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.cpp.s
+.PHONY : client.cpp.s
 
 # Help Target
 help:
@@ -158,9 +158,9 @@ help:
 	@echo ... Chat_Client
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... des.obj
-	@echo ... des.i
-	@echo ... des.s
+	@echo ... client.obj
+	@echo ... client.i
+	@echo ... client.s
 .PHONY : help
 
 

@@ -12,7 +12,11 @@ unsigned __stdcall ThreadRecv(void *param);
 
 unsigned __stdcall ThreadSend(void *param);
 
-int genKey();
+int msg_encryption(char* msg_text);
+
+int msg_decryption(char* msg_text);
+
+// int genKey();
 
 int sayHello(SOCKET ClientSocket);
 

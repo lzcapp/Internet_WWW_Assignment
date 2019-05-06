@@ -1,19 +1,21 @@
+//
+// Created by rainy on 5/6/2019.
+//
+
+// #include "DES.h"
+
 #include <bits/stdc++.h>
 
 using namespace std;
-
-string k = "E713FFBC37A442AF";
-
-char result[1024] = {0};
-char msg_result[1024] = {0};
+string k;
 
 struct node {
-    int c[80]{};
-    int d[80]{};
-    int cd[80]{};
-    int k_n[80]{};
-    int l[80]{};
-    int r[80]{};
+    int c[80];
+    int d[80];
+    int cd[80];
+    int k_n[80];
+    int l[80];
+    int r[80];
 
     node() {
         memset(c, 0, sizeof(c));
@@ -128,7 +130,8 @@ int s_box[8][4][16] = {
         7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8,
         2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11};
 
-int f(int r[80], const int kn[80]) {
+///F函数实现E盒扩展
+int f(int r[80], int kn[80]) {
     int x = 0;
     int e[80] = {0};
     int h = 0, l = 0, idx = 0;
@@ -179,9 +182,9 @@ int encryption(string m, int choice) {
         if (k[i] >= '0' && k[i] <= '9') {
             num = k[i] - '0';
         } else { num = k[i] - 'A' + 10; }
-        two_k[++idx] = num >> 3 & 1;
-        two_k[++idx] = num >> 2 & 1;
-        two_k[++idx] = num >> 1 & 1;
+        two_k[++idx] = (num >> 3) & 1;
+        two_k[++idx] = (num >> 2) & 1;
+        two_k[++idx] = (num >> 1) & 1;
         two_k[++idx] = num & 1;
     }
 
@@ -250,11 +253,6 @@ int encryption(string m, int choice) {
     }
 
 
-///明文加密 71页图4-8明文加密过程///
-/*
-DES算法主函数
-功能：实现DES算法的16轮加密
-*/
     int ip[80] = {0};
     //初始变换ip
     for (int i = 1; i <= 64; i++) {
@@ -314,30 +312,16 @@ DES算法主函数
     }
 
     ///choice=0时是加密操作，choice=1时是解密操作
-
     int tem_num;
     if (choice == 0) {
-        int index = 0;
         //字节转换成字符输出密文
         for (int i = 1; i <= 64; i += 4) {
             tem_num = ans[i] * 8 + ans[i + 1] * 4 + ans[i + 2] * 2 + ans[i + 3] * 1;
             if (tem_num >= 10) {
-                // printf("%c", (tem_num - 10) + 'A');
-                char temp;
-                temp = (tem_num - 10) + 'A';
-                result[index] = temp;
-                index++;
-            } else {
-                // printf("%c", tem_num + '0');
-                char temp;
-                temp = tem_num + '0';
-                result[index] = temp;
-                index++;
-            }
+                printf("%c", (tem_num - 10) + 'A');
+            } else { printf("%c", tem_num + '0'); }
         }
-        strcpy(msg_result, result);
     } else {
-        int index = 0;
         int change[1000];
         int pos = 0;
         for (int i = 1; i <= 64; i += 4) {
@@ -350,89 +334,94 @@ DES算法主函数
             jieans *= 16;
             jieans += change[i + 1];
             //printf("%d %d\n",change[i],change[i+1]);
-            // printf("%c", jieans);
-            char temp;
-            temp = jieans;
-            result[index] = temp;
-            index++;
+            printf("%c", jieans);
             jieans = 0;
         }
-        strcpy(msg_result, result);
     }
 }
-
-int msg_encryption(char* msg_text) {
-    int len = strlen(msg_text), idx = 0;
-    char tensix[2000], tem[1000], now = 0;
-    for (int i = 0; i < len; i++) //文本转16进制
-    {
-        while (msg_text[i]) {
-            if (msg_text[i] % 16 >= 10) { tem[++idx] = ((msg_text[i] % 16) - 10) + 'A'; }
-            else { tem[++idx] = (msg_text[i] % 16) + '0'; }
-            msg_text[i] /= 16;
-        }
-        //倒序存入
-        for (int j = idx; j >= 1; j--) {
-            tensix[++now] = tem[j];
-        }
-        idx = 0;
-    }
-    while (now % 16)//不够16位补0；
-    {
-        ++now;
-        tensix[now] = '0';
-    }
-    int sum = 0;
-    string m;
-    for (int i = 1; i <= now; i++) //每64位加密一次；
-    {
-        sum++;
-        m += tensix[i];
-        //cout<<m<<endl;
-        if (sum == 16) {
-            sum = 0;
-            encryption(m, 0);
-            m = "";
-            //printf("%s", result);
-            //strcpy(msg_result, result);
-        }
-    }
-    //strcpy(msg_result, text);
-    return 0;
-}
-
-int msg_decryption(char* msg_text) {
-    int len = strlen(msg_text);
-    int sum = 0;
-    string m;
-    char text[128] = {0};
-    strcpy(text, "");
-    for (int i = 0; i < len; i++) {
-        sum++;
-        m += msg_text[i];
-        if (sum == 16) {
-            sum = 0;
-            encryption(m, 1);
-            m = "";
-            //printf("%s", result);
-            //strcat(text, result);
-        }
-    }
-    //strcpy(msg_result, text);
-    return 0;
-}
-
-/*
 
 int main() {
-    char msg[1024];
-    strcpy(msg, "caonima");
-    msg_encryption(msg);
-    printf("en: %s\n", msg_result);
-    strcpy(msg, "813DB7B34102D5E2");
-    msg_decryption(msg);
-    printf("de: %s\n", msg_result);
+    while (true) {
+        cout << "***********************" << endl;
+        cout << "****1 for encryption***" << endl;
+        cout << "****2 for decryption***" << endl;
+        cout << "****3 for exit*********" << endl;
+        cout << "***********************" << endl;
+        int choice;
+        cin >> choice;
+        if (choice == 1) {
+            k = "";
+            getchar();
+            srand((int) time(0));
+            cout << "******Plain test:******" << endl;
+            char say[1000];
+            gets(say);
+            cout << "*******Randon key generating:******" << endl;
+            int num;
+            for (int i = 1; i <= 16; i++) {
+                num = rand() % 16, k += mikey[num];
+            }
+            cout << "The key is: " << k << endl;
+            printf("The cipher text is: ");
+            int len = strlen(say), idx = 0;
+            char tensix[2000], tem[1000], now = 0;
+            for (int i = 0; i < len; i++) //文本转16进制
+            {
+                while (say[i]) {
+                    if (say[i] % 16 >= 10) { tem[++idx] = ((say[i] % 16) - 10) + 'A'; }
+                    else { tem[++idx] = (say[i] % 16) + '0'; }
+                    say[i] /= 16;
+                }
+                //倒序存入
+                for (int j = idx; j >= 1; j--) {
+                    tensix[++now] = tem[j];
+                }
+                idx = 0;
+            }
+            while (now % 16)//不够16位补0；
+            {
+                ++now;
+                tensix[now] = '0';
+            }
+            int sum = 0;
+            string m = "";
+            for (int i = 1; i <= now; i++) //每64位加密一次；
+            {
+                sum++;
+                m += tensix[i];
+                //cout<<m<<endl;
+                if (sum == 16) {
+                    sum = 0;
+                    encryption(m, 0);
+                    m = "";
+                }
+            }
+            printf("\n");
+        } else if (choice == 2) {
+            getchar();
+            cout << "******Cipher text:******" << endl;
+            char tensix[1000];
+            gets(tensix);
+            cout << "******Key:******" << endl;
+            cin >> k;
+            printf("Plain text:");
+            int len = strlen(tensix);
+            int sum = 0;
+            string m = "";
+            for (int i = 0; i < len; i++) //每64位加密一次；
+            {
+                sum++;
+                m += tensix[i];
+                if (sum == 16) {
+                    sum = 0;
+                    encryption(m, 1);
+                    m = "";
+                }
+            }
+            printf("\n");
+        } else {
+            return 0;
+        }
+    }
     return 0;
 }
-
-*/

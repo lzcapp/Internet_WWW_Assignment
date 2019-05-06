@@ -9,3 +9,5 @@ set(CMAKE_EXE_LINKER_FLAGS -static)
 link_libraries(ws2_32)
 
 add_executable(Chat_Client client.cpp)
+
+# add_executable(Chat_Client des.cpp)
