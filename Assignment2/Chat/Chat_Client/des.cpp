@@ -1,9 +1,9 @@
-//
-// Module for DES Algorithm
-//      => Decryption/Encryption
-//
-
-// #include "DES.h"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCDFAInspection"
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
 #include <bits/stdc++.h>
 
@@ -12,12 +12,12 @@ using namespace std;
 string k;
 
 struct node {
-    int c[80];
-    int d[80];
-    int cd[80];
-    int k_n[80];
-    int l[80];
-    int r[80];
+    int c[80]{};
+    int d[80]{};
+    int cd[80]{};
+    int k_n[80]{};
+    int l[80]{};
+    int r[80]{};
 
     node() {
         memset(c, 0, sizeof(c));
@@ -27,6 +27,8 @@ struct node {
         memset(r, 0, sizeof(r));
     }
 };
+
+char result[66] = {0};
 
 char mikey[18] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
@@ -132,8 +134,7 @@ int s_box[8][4][16] = {
         7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8,
         2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11};
 
-///F函数实现E盒扩展
-int f(int r[80], int kn[80]) {
+int f(int r[80], const int kn[80]) {
     int x = 0;
     int e[80] = {0};
     int h = 0, l = 0, idx = 0;
@@ -161,7 +162,7 @@ int f(int r[80], int kn[80]) {
     }
 }
 
-int jiami(string m, int choice) {
+char* encryption(string m, int choice) {
 /*
 转二进制
 功能：将16个16进制转换成16个二进制并存到two数组
@@ -184,9 +185,9 @@ int jiami(string m, int choice) {
         if (k[i] >= '0' && k[i] <= '9') {
             num = k[i] - '0';
         } else { num = k[i] - 'A' + 10; }
-        two_k[++idx] = (num >> 3) & 1;
-        two_k[++idx] = (num >> 2) & 1;
-        two_k[++idx] = (num >> 1) & 1;
+        two_k[++idx] = num >> 3 & 1;
+        two_k[++idx] = num >> 2 & 1;
+        two_k[++idx] = num >> 1 & 1;
         two_k[++idx] = num & 1;
     }
 
@@ -275,8 +276,6 @@ DES算法主函数
         l_r[0].r[i] = ip[j];
     }
 
-    ///choice=0时是加密操作，choice=1时是解密操作
-    //进行16轮运算
     if (choice == 0) {
         for (int i = 1; i <= 16; i++) //计算L1-L16，R1-R16;
         {
@@ -323,14 +322,26 @@ DES算法主函数
     ///choice=0时是加密操作，choice=1时是解密操作
     int tem_num;
     if (choice == 0) {
+        int index = 0;
         //字节转换成字符输出密文
         for (int i = 1; i <= 64; i += 4) {
             tem_num = ans[i] * 8 + ans[i + 1] * 4 + ans[i + 2] * 2 + ans[i + 3] * 1;
             if (tem_num >= 10) {
-                printf("%c", (tem_num - 10) + 'A');
-            } else { printf("%c", tem_num + '0'); }
+                // printf("%c", (tem_num - 10) + 'A');
+                char temp;
+                temp = (tem_num - 10) + 'A';
+                result[index] = temp;
+                index++;
+            } else {
+                // printf("%c", tem_num + '0');
+                char temp;
+                temp = tem_num + '0';
+                result[index] = temp;
+                index++;
+            }
         }
     } else {
+        int index = 0;
         int change[1000];
         int pos = 0;
         for (int i = 1; i <= 64; i += 4) {
@@ -343,8 +354,16 @@ DES算法主函数
             jieans *= 16;
             jieans += change[i + 1];
             //printf("%d %d\n",change[i],change[i+1]);
-            printf("%c", jieans);
+            // printf("%c", jieans);
+            char temp;
+            temp = jieans;
+            result[index]  = temp;
+            index++;
             jieans = 0;
         }
     }
 }
+
+#pragma clang diagnostic pop
+#pragma clang diagnostic pop
+#pragma clang diagnostic pop
