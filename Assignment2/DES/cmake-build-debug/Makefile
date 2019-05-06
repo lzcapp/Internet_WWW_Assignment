@@ -47,10 +47,10 @@ RM = "C:\Program Files\CMake\bin\cmake.exe" -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client
+CMAKE_SOURCE_DIR = C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\DES
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-debug
+CMAKE_BINARY_DIR = C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\DES\cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -79,9 +79,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-debug\CMakeFiles C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-debug\CMakeFiles\progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\DES\cmake-build-debug\CMakeFiles C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\DES\cmake-build-debug\CMakeFiles\progress.marks
 	$(MAKE) -f CMakeFiles\Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\cmake-build-debug\CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\DES\cmake-build-debug\CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -110,44 +110,44 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named Chat_Client
+# Target rules for targets named DES
 
 # Build rule for target.
-Chat_Client: cmake_check_build_system
-	$(MAKE) -f CMakeFiles\Makefile2 Chat_Client
-.PHONY : Chat_Client
+DES: cmake_check_build_system
+	$(MAKE) -f CMakeFiles\Makefile2 DES
+.PHONY : DES
 
 # fast build rule for target.
-Chat_Client/fast:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/build
-.PHONY : Chat_Client/fast
+DES/fast:
+	$(MAKE) -f CMakeFiles\DES.dir\build.make CMakeFiles/DES.dir/build
+.PHONY : DES/fast
 
-client.obj: client.cpp.obj
+main.obj: main.cpp.obj
 
-.PHONY : client.obj
+.PHONY : main.obj
 
 # target to build an object file
-client.cpp.obj:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.cpp.obj
-.PHONY : client.cpp.obj
+main.cpp.obj:
+	$(MAKE) -f CMakeFiles\DES.dir\build.make CMakeFiles/DES.dir/main.cpp.obj
+.PHONY : main.cpp.obj
 
-client.i: client.cpp.i
+main.i: main.cpp.i
 
-.PHONY : client.i
+.PHONY : main.i
 
 # target to preprocess a source file
-client.cpp.i:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.cpp.i
-.PHONY : client.cpp.i
+main.cpp.i:
+	$(MAKE) -f CMakeFiles\DES.dir\build.make CMakeFiles/DES.dir/main.cpp.i
+.PHONY : main.cpp.i
 
-client.s: client.cpp.s
+main.s: main.cpp.s
 
-.PHONY : client.s
+.PHONY : main.s
 
 # target to generate assembly for a file
-client.cpp.s:
-	$(MAKE) -f CMakeFiles\Chat_Client.dir\build.make CMakeFiles/Chat_Client.dir/client.cpp.s
-.PHONY : client.cpp.s
+main.cpp.s:
+	$(MAKE) -f CMakeFiles\DES.dir\build.make CMakeFiles/DES.dir/main.cpp.s
+.PHONY : main.cpp.s
 
 # Help Target
 help:
@@ -155,12 +155,12 @@ help:
 	@echo ... all (the default if no target is provided)
 	@echo ... clean
 	@echo ... depend
-	@echo ... Chat_Client
+	@echo ... DES
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... client.obj
-	@echo ... client.i
-	@echo ... client.s
+	@echo ... main.obj
+	@echo ... main.i
+	@echo ... main.s
 .PHONY : help
 
 

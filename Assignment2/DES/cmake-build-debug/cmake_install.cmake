@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/rainy/Programming/UIC/Internet_WWW_Assignment/Assignment2/Chat/Chat_Client
+# Install script for directory: C:/Users/rainy/Programming/UIC/Internet_WWW_Assignment/Assignment2/DES
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/Chat_Client")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/DES")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "C:/Users/rainy/Programming/UIC/Internet_WWW_Assignment/Assignment2/Chat/Chat_Client/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "C:/Users/rainy/Programming/UIC/Internet_WWW_Assignment/Assignment2/DES/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

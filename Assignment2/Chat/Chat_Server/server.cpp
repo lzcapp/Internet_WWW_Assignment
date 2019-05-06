@@ -14,10 +14,10 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
 
-#define SEND_OVER true
-#define SEND_YET  false
+#define ALREADY_SEND true
+#define HAVENOT_SEND false
 
-int g_iStatus = SEND_YET;
+int g_iStatus = HAVENOT_SEND;
 auto g_ServerSocket = INVALID_SOCKET;
 SOCKADDR_IN g_ClientAddr = {0};
 int g_iClientAddrLen = sizeof(g_ClientAddr);
@@ -44,21 +44,20 @@ unsigned __stdcall ThreadSend(void *param) {
     memcpy(temp, g_Client[!flag].buf, sizeof(temp));
     sprintf(g_Client[flag].buf, "%s: %s", g_Client[!flag].userName, temp);
 
-    if (strlen(temp) != 0 && g_iStatus == SEND_YET) {
+    if (strlen(temp) != 0 && g_iStatus == HAVENOT_SEND) {
         ret = send(g_Client[flag].sClient, g_Client[flag].buf, sizeof(g_Client[flag].buf), 0);
     }
     if (ret == SOCKET_ERROR) {
         return 1;
     }
-    g_iStatus = SEND_OVER;
+    g_iStatus = ALREADY_SEND;
     return 0;
 }
 
 unsigned __stdcall ThreadRecv(void *param) {
     auto client = INVALID_SOCKET;
     int flag = 0;
-    if (*(int *) param == g_Client[0].flag)
-    {
+    if (*(int *) param == g_Client[0].flag) {
         client = g_Client[0].sClient;
         // flag = 0;
     } else if (*(int *) param == g_Client[1].flag) {
@@ -72,11 +71,10 @@ unsigned __stdcall ThreadRecv(void *param) {
         if (ret == SOCKET_ERROR) {
             continue;
         }
-        g_iStatus = SEND_YET;                                //设置转发状态为未转发
+        g_iStatus = HAVENOT_SEND;                                //设置转发状态为未转发
         flag = client == g_Client[0].sClient ? 1 : 0;        //这个要设置，否则会出现自己给自己发消息的BUG
         memcpy(g_Client[!flag].buf, temp, sizeof(g_Client[!flag].buf));
-        _beginthreadex(nullptr, 0, ThreadSend, &flag, 0, nullptr); //开启一个转发线程,flag标记着要转发给哪个客户端
-        //这里也可能是导致CPU使用率上升的原因。
+        _beginthreadex(nullptr, 0, ThreadSend, &flag, 0, nullptr);
     }
     // return 0;
 }
@@ -117,7 +115,8 @@ unsigned __stdcall ThreadAccept(void *param) {
                 ++i;
                 continue;
             }
-            //如果有客户端申请连接就接受连接
+
+            // Accept clients' connections
             if ((g_Client[i].sClient = accept(g_ServerSocket, (SOCKADDR *) &g_ClientAddr, &g_iClientAddrLen)) ==
                 INVALID_SOCKET) {
                 printf("accept failed with error code: %d\n", WSAGetLastError());
@@ -126,10 +125,23 @@ unsigned __stdcall ThreadAccept(void *param) {
                 return -1;
             }
             recv(g_Client[i].sClient, g_Client[i].userName, sizeof(g_Client[i].userName), 0); //接收用户名
-            printf("Successfuuly got a connection from IP:%s ,Port: %d,UerName: %s\n",
-                   inet_ntoa(g_ClientAddr.sin_addr), htons(g_ClientAddr.sin_port), g_Client[i].userName);
+            printf("Successfuuly got a connection from IP: %s, Port: %d, UserName: %s\n", inet_ntoa(g_ClientAddr.sin_addr), htons(g_ClientAddr.sin_port), g_Client[i].userName);
             memcpy(g_Client[i].IP, inet_ntoa(g_ClientAddr.sin_addr), sizeof(g_Client[i].IP)); //记录客户端IP
             g_Client[i].flag = g_Client[i].sClient; //不同的socke有不同UINT_PTR类型的数字来标识
+            if (i != 0) {
+                int flag_A = i;
+                int flag_B = !i;
+                char msg_A[128];
+                char msg_B[128];
+                strcat(msg_A, "MY NAME IS:");
+                strcat(msg_A, g_Client[flag_A].userName);
+                memcpy(g_Client[flag_A].buf, msg_B, sizeof(g_Client[flag_A].buf));
+                strcat(msg_B, "MY NAME IS:");
+                strcat(msg_B, g_Client[flag_B].userName);
+                memcpy(g_Client[flag_B].buf, msg_A, sizeof(g_Client[flag_B].buf));
+                send(g_Client[flag_A].sClient, g_Client[flag_A].buf, sizeof(g_Client[flag_A].buf), 0);
+                send(g_Client[flag_B].sClient, g_Client[flag_B].buf, sizeof(g_Client[flag_B].buf), 0);
+            }
             i++;
         }
         i = 0;
@@ -202,11 +214,11 @@ int StartServer() {
     }
 
     _beginthreadex(nullptr, 0, ThreadAccept, nullptr, 0, nullptr);
-    for (int k = 0; k < 100; k++) { //让主线程休眠，不让它关闭TCP连接.
+    for (int k = 0; k < 100; k++) {
         Sleep(10000000);
+        // Keep the TCP connection on
     }
 
-    //关闭套接字
     for (auto &j : g_Client) {
         if (j.sClient != INVALID_SOCKET) {
             closesocket(j.sClient);
