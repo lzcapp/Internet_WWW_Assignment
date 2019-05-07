@@ -2,10 +2,9 @@
 
 using namespace std;
 
-string k = "E713FFBC37A442AF";
+string k = "58BA5E34286F72A7";
 
-char result[1024] = {0};
-char msg_result[1024] = {0};
+string msg_result;
 
 struct node {
     int c[80]{};
@@ -314,30 +313,33 @@ DES算法主函数
     }
 
     ///choice=0时是加密操作，choice=1时是解密操作
-
     int tem_num;
+    int index = 0;
+
     if (choice == 0) {
-        int index = 0;
+        string result;
         //字节转换成字符输出密文
         for (int i = 1; i <= 64; i += 4) {
             tem_num = ans[i] * 8 + ans[i + 1] * 4 + ans[i + 2] * 2 + ans[i + 3] * 1;
             if (tem_num >= 10) {
-                // printf("%c", (tem_num - 10) + 'A');
-                char temp;
-                temp = (tem_num - 10) + 'A';
-                result[index] = temp;
-                index++;
+                //printf("%c", (tem_num - 10) + 'A');
+                char strchar[2];
+                sprintf(strchar, "%c", (tem_num - 10) + 'A');
+                result += strchar[0];
+                // index;
             } else {
-                // printf("%c", tem_num + '0');
-                char temp;
-                temp = tem_num + '0';
-                result[index] = temp;
-                index++;
+                //printf("%c", tem_num + '0');
+                char strchar[2];
+                sprintf(strchar, "%c", tem_num + '0');
+                result += strchar[0];
+                // index++;
             }
         }
-        strcpy(msg_result, result);
+        msg_result += result;
+        // strcpy(msg_result, "");
+        // strcpy(msg_result, result);
     } else {
-        int index = 0;
+        string result;
         int change[1000];
         int pos = 0;
         for (int i = 1; i <= 64; i += 4) {
@@ -350,14 +352,13 @@ DES算法主函数
             jieans *= 16;
             jieans += change[i + 1];
             //printf("%d %d\n",change[i],change[i+1]);
-            // printf("%c", jieans);
-            char temp;
-            temp = jieans;
-            result[index] = temp;
-            index++;
+            printf("%c", jieans);
+            char strchar[2];
+            sprintf(strchar, "%c", jieans);
+            result += strchar[0];
             jieans = 0;
         }
-        strcpy(msg_result, result);
+        msg_result += result;
     }
 }
 
@@ -423,16 +424,20 @@ int msg_decryption(char* msg_text) {
 }
 
 /*
-
 int main() {
     char msg[1024];
-    strcpy(msg, "caonima");
+    strcpy(msg, "I am Judy");
     msg_encryption(msg);
-    printf("en: %s\n", msg_result);
-    strcpy(msg, "813DB7B34102D5E2");
-    msg_decryption(msg);
-    printf("de: %s\n", msg_result);
+    std::cout << "" << std::endl;
+    std::cout << msg_result << std::endl;
+    char tmp[1024];
+    strcpy(tmp, "14D044B0D695585116F61A17FB263578");
+    msg_result = "";
+    msg_decryption(tmp);
+    std::cout << "" << std::endl;
+    std::cout << msg_result << std::endl;
     return 0;
 }
-
 */
+
+
