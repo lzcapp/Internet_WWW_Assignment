@@ -1,3 +1,14 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnusedValue"
+#pragma ide diagnostic ignored "OCDFAInspection"
+#pragma clang diagnostic ignored "-Wshadow"
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
+
+#pragma comment(lib, "ws2_32.lib")
+
+#pragma warning (disable: 4996)
+
 #include <winsock2.h>
 #include <process.h>
 #include <cstdio>
@@ -7,21 +18,6 @@
 // #include "des.h"
 #include "des.cpp"
 #include "client.h"
-
-#pragma comment(lib, "ws2_32.lib")
-
-#pragma warning (disable: 4996)
-
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "UnusedValue"
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCDFAInspection"
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wshadow"
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
 // #define RECV_OVER 1
 // #define RECV_YET 0
@@ -85,10 +81,11 @@ unsigned __stdcall ThreadRecv(void *param) {
                     return -1;
                 }
             }
-            printf("%s\n", buf);
+            printf("%s: %s\n", urName, buf);
             msg_result = "";
             msg_decryption(buf);
             std::cout << msg_result << std::endl;
+            std::cout << "" << std::endl;
             // iStatus = RECV_OVER;
         } else {
             Sleep(100);
@@ -112,7 +109,8 @@ unsigned __stdcall ThreadSend(void *param) {
         printf(buf);
         msg_result = "";
         msg_encryption(buf);
-        std::cout << msg_result << std::endl;
+        // std::cout << "" << std::endl;
+        // std::cout << msg_result << std::endl;
         char* msg = (char *)msg_result.c_str();
         printf("%d\n", msg_result.length());
         ret = send(*(SOCKET *) param, msg, msg_result.length(), 0);
@@ -154,7 +152,7 @@ int ConnectChatServer() {
     ServerAddr.sin_port = htons(uPort);
     ServerAddr.sin_addr.S_un.S_addr = inet_addr(IP);
 
-    printf("connecting......\n");
+    printf("Connecting...\n");
 
     if (SOCKET_ERROR == connect(ClientSocket, (SOCKADDR *) &ServerAddr, sizeof(ServerAddr))) {
         printf("connect failed with error code: %d\n", WSAGetLastError());
@@ -163,7 +161,7 @@ int ConnectChatServer() {
         return -1;
     }
     printf("Connect to chat server successfully.\n");
-    printf("\t=> IP: %s ,Port: %d\n\n", IP, htons(ServerAddr.sin_port));
+    printf("\t=> IP: %s, Port: %d\n\n", IP, htons(ServerAddr.sin_port));
     printf("My name is: ");
     gets(myName);
     sayHello(ClientSocket);
@@ -179,7 +177,7 @@ int ConnectChatServer() {
 
 int sayHello(SOCKET ClientSocket) {
     char msg[128];
-    strcpy(msg, "NAME: ");
+    strcpy(msg, "UserName: ");
     strcat(msg, myName);
     int sta = send(ClientSocket, msg, sizeof(msg), 0);
     if (sta == SOCKET_ERROR) {
@@ -250,11 +248,13 @@ int handShaking(SOCKET ClientSocket) {
 
 int main() {
     ConnectChatServer();
-    /*char msg[1024];
+    /*
+    char msg[1024];
     strcpy(msg, "caonima");
     msg_encryption(msg);
     strcpy(msg, "813DB7B34102D5E2");
-    msg_decryption(msg);*/
+    msg_decryption(msg);
+    */
     return 0;
 }
 

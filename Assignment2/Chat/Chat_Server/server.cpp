@@ -88,7 +88,7 @@ unsigned __stdcall ThreadManager(void *param) {
             if (g_Client[0].sClient != 0) {
                 CloseHandle(g_hRecv1); //这里关闭了线程句柄，但是测试结果断开连C/S接后CPU仍然疯涨
                 CloseHandle(g_hRecv2);
-                printf("Disconnect from IP: %s,UserName: %s\n", g_Client[0].IP, g_Client[0].userName);
+                printf("Disconnect from IP: %s, %s\n", g_Client[0].IP, g_Client[0].userName);
                 closesocket(g_Client[0].sClient);   //这里简单的判断：若发送消息失败，则认为连接中断(其原因有多种)，关闭该套接字
                 g_Client[0] = {0};
             }
@@ -97,7 +97,7 @@ unsigned __stdcall ThreadManager(void *param) {
             if (g_Client[1].sClient != 0) {
                 CloseHandle(g_hRecv1);
                 CloseHandle(g_hRecv2);
-                printf("Disconnect from IP: %s,UserName: %s\n", g_Client[1].IP, g_Client[1].userName);
+                printf("Disconnect from IP: %s, %s\n", g_Client[1].IP, g_Client[1].userName);
                 closesocket(g_Client[1].sClient);
                 g_Client[1] = {0};
             }
@@ -128,7 +128,8 @@ unsigned __stdcall ThreadAccept(void *param) {
                 return -1;
             }
             recv(g_Client[i].sClient, g_Client[i].userName, sizeof(g_Client[i].userName), 0); //接收用户名
-            printf("Successfuuly got a connection from IP: %s, Port: %d, UserName: %s\n", inet_ntoa(g_ClientAddr.sin_addr), htons(g_ClientAddr.sin_port), g_Client[i].userName);
+            printf("Successfully establish a connection from\n");
+            printf("IP: %s, Port: %d, %s\n", inet_ntoa(g_ClientAddr.sin_addr), htons(g_ClientAddr.sin_port), g_Client[i].userName);
             memcpy(g_Client[i].IP, inet_ntoa(g_ClientAddr.sin_addr), sizeof(g_Client[i].IP)); //记录客户端IP
             g_Client[i].flag = g_Client[i].sClient; //不同的socke有不同UINT_PTR类型的数字来标识
 //            if (i != 0) {

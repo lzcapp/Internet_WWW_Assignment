@@ -1,3 +1,8 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "OCDFAInspection"
+#pragma ide diagnostic ignored "cert-err58-cpp"
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -23,7 +28,7 @@ struct node {
     }
 };
 
-char mikey[18] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+// char mikey[18] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 //IP初始置换表
 int pc_ip[80] = {0, 58, 50, 42, 34, 26, 18, 10, 2,
@@ -314,7 +319,6 @@ DES算法主函数
 
     ///choice=0时是加密操作，choice=1时是解密操作
     int tem_num;
-    int index = 0;
 
     if (choice == 0) {
         string result;
@@ -352,7 +356,7 @@ DES算法主函数
             jieans *= 16;
             jieans += change[i + 1];
             //printf("%d %d\n",change[i],change[i+1]);
-            printf("%c", jieans);
+            //printf("%c", jieans);
             char strchar[2];
             sprintf(strchar, "%c", jieans);
             result += strchar[0];
@@ -440,4 +444,4 @@ int main() {
 }
 */
 
-
+#pragma clang diagnostic pop
