@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <conio.h>
+#include <comutil.h>
 
 // #include "des.h"
 #include "des.cpp"
@@ -27,56 +28,34 @@ char urName[128] = {0};
 // int iStatus = RECV_YET;
 
 
-std::string UTF8_To_string(const std::string &str) {
-    int nwLen = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
-
-    auto *pwBuf = new wchar_t[nwLen + 1];
-    memset(pwBuf, 0, nwLen * 2 + 2);
-
-    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), pwBuf, nwLen);
-
-    int nLen = WideCharToMultiByte(CP_ACP, 0, pwBuf, -1, nullptr, 0, nullptr, nullptr);
-
-    char *pBuf = new char[nLen + 1];
-    memset(pBuf, 0, nLen + 1);
-
-    WideCharToMultiByte(CP_ACP, 0, pwBuf, nwLen, pBuf, nLen, nullptr, nullptr);
-
-    std::string retStr = pBuf;
-
-    delete[]pBuf;
-    delete[]pwBuf;
-
-    pBuf = nullptr;
-    pwBuf = nullptr;
-
-    return retStr;
+std::string unicode_string(const std::wstring &wstr) {
+    std::string ret;
+    std::mbstate_t state = {};
+    const wchar_t *src = wstr.data();
+    size_t len = std::wcsrtombs(nullptr, &src, 0, &state);
+    if (static_cast<size_t>(-1) != len) {
+        std::unique_ptr< char [] > buff(new char[len + 1]);
+        len = std::wcsrtombs(buff.get(), &src, len, &state);
+        if (static_cast<size_t>(-1) != len) {
+            ret.assign(buff.get(), len);
+        }
+    }
+    return ret;
 }
 
-std::string string_To_UTF8(const std::string &str) {
-    int nwLen = ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, nullptr, 0);
-
-    auto *pwBuf = new wchar_t[nwLen + 1];//一定要加1，不然会出现尾巴
-    ZeroMemory(pwBuf, nwLen * 2 + 2);
-
-    ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.length(), pwBuf, nwLen);
-
-    int nLen = ::WideCharToMultiByte(CP_UTF8, 0, pwBuf, -1, nullptr, 0, nullptr, nullptr);
-
-    char *pBuf = new char[nLen + 1];
-    ZeroMemory(pBuf, nLen + 1);
-
-    ::WideCharToMultiByte(CP_UTF8, 0, pwBuf, nwLen, pBuf, nLen, nullptr, nullptr);
-
-    std::string retStr(pBuf);
-
-    delete[]pwBuf;
-    delete[]pBuf;
-
-    pwBuf = nullptr;
-    pBuf = nullptr;
-
-    return retStr;
+std::wstring string_unicode(const std::string & str) {
+    std::wstring ret;
+    std::mbstate_t state = {};
+    const char *src = str.data();
+    size_t len = std::mbsrtowcs(nullptr, &src, 0, &state);
+    if (static_cast<size_t>(-1) != len) {
+        std::unique_ptr< wchar_t [] > buff(new wchar_t[len + 1]);
+        len = std::mbsrtowcs(buff.get(), &src, len, &state);
+        if (static_cast<size_t>(-1) != len) {
+            ret.assign(buff.get(), len);
+        }
+    }
+    return ret;
 }
 
 unsigned __stdcall ThreadRecv(void *param) {
@@ -135,7 +114,8 @@ unsigned __stdcall ThreadRecv(void *param) {
             }*/
             msg_decryption(buf);
             //string msg = UTF8_To_string();
-            string msg = UTF8_To_string(msg_result);
+            basic_string<wchar_t> result = reinterpret_cast<basic_string<wchar_t> &&>(msg_result);
+            string msg = unicode_string(result);
             printf("%s: %s\n", urName, msg.c_str());
             msg_result = "";
             // iStatus = RECV_OVER;
@@ -157,13 +137,13 @@ unsigned __stdcall ThreadSend(void *param) {
         }
         printf("%s: ", myName);
         gets(input);
-        string msg = input;
+        wstring msg = reinterpret_cast<basic_string<wchar_t> &&>(input);
         printf(input);
         printf("\n");
-        msg = string_To_UTF8(input);
-        std::cout << msg << std::endl;
+        msg = string_unicode(input);
+        //std::cout << msg << std::endl;
         msg_result = "";
-        char* buf = const_cast<char *>(msg.c_str());
+        char *buf = (char *) msg.c_str();
         msg_encryption(buf);
         // std::cout << "" << std::endl;
         // std::cout << msg_result << std::endl;
