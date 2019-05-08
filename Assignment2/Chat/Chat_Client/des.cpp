@@ -367,7 +367,12 @@ DES算法主函数
 }
 
 int msg_encryption(char* msg_text) {
-    int len = strlen(msg_text), idx = 0;
+    int len = strlen(msg_text);
+    int idx = 0;
+    printf("len: %d\n", len);
+    if (len % 8 != 0) {
+
+    }
     char tensix[2000], tem[1000], now = 0;
     for (int i = 0; i < len; i++) //文本转16进制
     {

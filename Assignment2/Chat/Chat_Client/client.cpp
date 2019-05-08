@@ -27,6 +27,58 @@ char urName[128] = {0};
 // int iStatus = RECV_YET;
 
 
+std::string UTF8_To_string(const std::string &str) {
+    int nwLen = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
+
+    auto *pwBuf = new wchar_t[nwLen + 1];
+    memset(pwBuf, 0, nwLen * 2 + 2);
+
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), pwBuf, nwLen);
+
+    int nLen = WideCharToMultiByte(CP_ACP, 0, pwBuf, -1, nullptr, 0, nullptr, nullptr);
+
+    char *pBuf = new char[nLen + 1];
+    memset(pBuf, 0, nLen + 1);
+
+    WideCharToMultiByte(CP_ACP, 0, pwBuf, nwLen, pBuf, nLen, nullptr, nullptr);
+
+    std::string retStr = pBuf;
+
+    delete[]pBuf;
+    delete[]pwBuf;
+
+    pBuf = nullptr;
+    pwBuf = nullptr;
+
+    return retStr;
+}
+
+std::string string_To_UTF8(const std::string &str) {
+    int nwLen = ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, nullptr, 0);
+
+    auto *pwBuf = new wchar_t[nwLen + 1];//一定要加1，不然会出现尾巴
+    ZeroMemory(pwBuf, nwLen * 2 + 2);
+
+    ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.length(), pwBuf, nwLen);
+
+    int nLen = ::WideCharToMultiByte(CP_UTF8, 0, pwBuf, -1, nullptr, 0, nullptr, nullptr);
+
+    char *pBuf = new char[nLen + 1];
+    ZeroMemory(pBuf, nLen + 1);
+
+    ::WideCharToMultiByte(CP_UTF8, 0, pwBuf, nwLen, pBuf, nLen, nullptr, nullptr);
+
+    std::string retStr(pBuf);
+
+    delete[]pwBuf;
+    delete[]pBuf;
+
+    pwBuf = nullptr;
+    pBuf = nullptr;
+
+    return retStr;
+}
+
 unsigned __stdcall ThreadRecv(void *param) {
     char buf[262144];
     auto ClientSocket = *(SOCKET *) param;
@@ -37,7 +89,7 @@ unsigned __stdcall ThreadRecv(void *param) {
             continue;
         }
         if (strlen(buf) != 0) {
-            char head[10] = {0};
+            /*char head[10] = {0};
             strncpy(head, buf, 4);
             if (strcmp(head, "NAME") == 0) {
                 strcpy(urName, buf);
@@ -80,12 +132,12 @@ unsigned __stdcall ThreadRecv(void *param) {
                 } else {
                     return -1;
                 }
-            }
-            printf("%s: %s\n", urName, buf);
-            msg_result = "";
+            }*/
             msg_decryption(buf);
-            std::cout << msg_result << std::endl;
-            std::cout << "" << std::endl;
+            //string msg = UTF8_To_string();
+            string msg = UTF8_To_string(msg_result);
+            printf("%s: %s\n", urName, msg.c_str());
+            msg_result = "";
             // iStatus = RECV_OVER;
         } else {
             Sleep(100);
@@ -96,7 +148,7 @@ unsigned __stdcall ThreadRecv(void *param) {
 
 //发送数据
 unsigned __stdcall ThreadSend(void *param) {
-    char buf[128] = {0};
+    char input[1024];
     int ret = 0;
     while (true) {
         int c = getch();
@@ -104,16 +156,22 @@ unsigned __stdcall ThreadSend(void *param) {
             continue;
         }
         printf("%s: ", myName);
-        gets(buf);
+        gets(input);
+        string msg = input;
+        printf(input);
         printf("\n");
-        printf(buf);
+        msg = string_To_UTF8(input);
+        std::cout << msg << std::endl;
         msg_result = "";
+        char* buf = const_cast<char *>(msg.c_str());
         msg_encryption(buf);
         // std::cout << "" << std::endl;
         // std::cout << msg_result << std::endl;
-        char* msg = (char *)msg_result.c_str();
-        printf("%d\n", msg_result.length());
-        ret = send(*(SOCKET *) param, msg, msg_result.length(), 0);
+        char *msg_en = (char *) msg_result.c_str();
+        //char *msg_en = const_cast<char *>(msg.c_str());
+        //printf("%d\n", msg_result.length());
+        ret = send(*(SOCKET *) param, msg_en, msg_result.length(), 0);
+        //ret = send(*(SOCKET *) param, msg_en, sizeof(msg_en), 0);
         if (ret == SOCKET_ERROR) {
             return 1;
         }
@@ -176,15 +234,16 @@ int ConnectChatServer() {
 }
 
 int sayHello(SOCKET ClientSocket) {
-    char msg[128];
-    strcpy(msg, "UserName: ");
-    strcat(msg, myName);
+    string name;
+    name += myName;
+    auto msg = name.c_str();
     int sta = send(ClientSocket, msg, sizeof(msg), 0);
     if (sta == SOCKET_ERROR) {
         return 1;
     }
     char buf[128];
     int ret = recv(ClientSocket, buf, sizeof(buf), 0);
+    printf("%s\n", buf);
     if (ret == SOCKET_ERROR) {
         return -1;
     }
@@ -223,7 +282,7 @@ int handShaking(SOCKET ClientSocket) {
             strcpy(temp_msg, "TEST_MSG_DES");
             msg_encryption(temp_msg);
             strcpy(msg, "TEST: ");
-            strcat(msg, (char *)msg_result.c_str());
+            strcat(msg, (char *) msg_result.c_str());
             int sta = send(ClientSocket, msg, sizeof(msg), 0);
             if (sta == SOCKET_ERROR) {
                 return 1;
