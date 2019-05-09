@@ -1,4 +1,4 @@
-# Install script for directory: D:/Programming/UIC/Internet_WWW_Assignment/Assignment2/DES
+# Install script for directory: C:/Users/rainy/Programming/UIC/Internet_WWW_Assignment/Assignment2/DES
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "D:/Programming/UIC/Internet_WWW_Assignment/Assignment2/DES/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "C:/Users/rainy/Programming/UIC/Internet_WWW_Assignment/Assignment2/DES/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

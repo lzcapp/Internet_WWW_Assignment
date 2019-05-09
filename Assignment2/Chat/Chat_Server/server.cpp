@@ -6,6 +6,12 @@
 #include <iostream>
 #include <ctime>
 #include <algorithm>
+#include <winsock2.h>
+#include <process.h>
+#include <cstdio>
+#include <cstdlib>
+#include <conio.h>
+#include <comutil.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -25,12 +31,13 @@ SOCKADDR_IN g_ClientAddr = {0};
 int g_iClientAddrLen = sizeof(g_ClientAddr);
 HANDLE g_hRecv1 = nullptr;
 HANDLE g_hRecv2 = nullptr;
+std::string pwd[2];
 
 
 typedef struct _Client {
     SOCKET sClient;
-    char buf[128];
-    char userName[16];
+    char buf[1024];
+    char userName[1024];
     char IP[20];
     UINT_PTR flag;
 } Client;
@@ -59,10 +66,8 @@ unsigned __stdcall ThreadSend(void *param) {
     // auto client = INVALID_SOCKET;
     char temp[128] = {0};
     memcpy(temp, g_Client[!flag].buf, sizeof(temp));
-    // sprintf(g_Client[flag].buf, "%s: %s", g_Client[!flag].userName, temp);
-
     sprintf(g_Client[flag].buf, "%s", temp);
-    printf("%s\n", g_Client[flag].buf);
+    printf("%s: %s\n", g_Client[!flag].userName, g_Client[flag].buf);
     std::string logLine = "Client, ";
     logLine += g_Client[flag].IP;
     logLine += ":";
@@ -157,12 +162,35 @@ unsigned __stdcall ThreadAccept(void *param) {
             if ((g_Client[i].sClient = accept(g_ServerSocket, (SOCKADDR *) &g_ClientAddr, &g_iClientAddrLen)) ==
                 INVALID_SOCKET) {
                 printf("accept failed with error code: %d\n", WSAGetLastError());
+                std::string logLine = "Server, ";
+                logLine += "localhost, , Client conection accept failed with error code ";
+                logLine += std::to_string(WSAGetLastError());
+                logLine += ".";
+                addLog(logLine);
                 closesocket(g_ServerSocket);
                 WSACleanup();
                 return -1;
             }
-            recv(g_Client[i].sClient, g_Client[i].userName, sizeof(g_Client[i].userName), 0); //接收用户名
-            printf("Successfully establish a connection from IP: %s, Port: %d, %s\n", inet_ntoa(g_ClientAddr.sin_addr),
+            recv(g_Client[i].sClient, g_Client[i].userName, sizeof(g_Client[i].userName), 0);
+            printf("%s\n", g_Client[i].userName);
+            std::string usrname;
+            usrname = g_Client[i].userName;
+            int pos = usrname.find('-');
+            std::string record = usrname.substr(0, pos);
+            std::cout << record << std::endl;
+            strcpy(g_Client[i].userName, record.c_str());
+            record = usrname.substr(pos, usrname.length());
+            pwd[i] = record;
+            std::cout << record << std::endl;
+            if (!pwd[1].empty()) {
+                if (pwd[0] != pwd[1]) {
+                    printf("Password not correct.\n");
+                    closesocket(g_Client[i].sClient);
+                    continue;
+                }
+            }
+
+            printf("Client Connection from IP: %s:%d, UserName: %s\n", inet_ntoa(g_ClientAddr.sin_addr),
                    htons(g_ClientAddr.sin_port), g_Client[i].userName);
             std::string logLine = "Client, ";
             logLine += inet_ntoa(g_ClientAddr.sin_addr);
@@ -172,8 +200,8 @@ unsigned __stdcall ThreadAccept(void *param) {
             logLine += g_Client[i].userName;
             logLine += ", Client connected to server.";
             addLog(logLine);
-            memcpy(g_Client[i].IP, inet_ntoa(g_ClientAddr.sin_addr), sizeof(g_Client[i].IP)); //记录客户端IP
-            g_Client[i].flag = g_Client[i].sClient; //不同的socke有不同UINT_PTR类型的数字来标识
+            memcpy(g_Client[i].IP, inet_ntoa(g_ClientAddr.sin_addr), sizeof(g_Client[i].IP));
+            g_Client[i].flag = g_Client[i].sClient;
             i++;
         }
         i = 0;
@@ -196,7 +224,7 @@ unsigned __stdcall ThreadAccept(void *param) {
         temp1 = g_Client[0].flag;
         temp2 = g_Client[1].flag;
 
-        Sleep(3000);
+        Sleep(2000);
     }
 }
 
@@ -242,6 +270,7 @@ int StartServer() {
         return -1;
     }
 
+    printf("Server is now started.\n");
     addLog("Server, localhost, , Server started.");
 
     _beginthreadex(nullptr, 0, ThreadAccept, nullptr, 0, nullptr);
