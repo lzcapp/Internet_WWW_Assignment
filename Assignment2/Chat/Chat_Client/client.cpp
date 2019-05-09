@@ -18,7 +18,7 @@
 
 // #include "des.h"
 #include "des.cpp"
-#include "client.h"
+// #include "client.h"
 
 // #define RECV_OVER 1
 // #define RECV_YET 0
@@ -27,36 +27,52 @@ char myName[128] = {0};
 char urName[128] = {0};
 // int iStatus = RECV_YET;
 
-
-std::string unicode_string(const std::wstring &wstr) {
-    std::string ret;
-    std::mbstate_t state = {};
-    const wchar_t *src = wstr.data();
-    size_t len = std::wcsrtombs(nullptr, &src, 0, &state);
-    if (static_cast<size_t>(-1) != len) {
-        std::unique_ptr< char [] > buff(new char[len + 1]);
-        len = std::wcsrtombs(buff.get(), &src, len, &state);
-        if (static_cast<size_t>(-1) != len) {
-            ret.assign(buff.get(), len);
-        }
+/*
+string search_csv(char text, int mode) {
+    FILE *fp = nullptr;
+    char *line, *record;
+    char buffer[1024];
+    string filename;
+    if (mode == 0) {
+        filename = "utf8_encode.csv";
+    } else if (mode == 0) {
+        filename = "utf8_decode.csv";
     }
-    return ret;
+    if ((fp = fopen(filename.c_str(), "at+")) != nullptr) {
+        fseek(fp, 170L, SEEK_SET);
+        while ((line = fgets(buffer, sizeof(buffer), fp)) != nullptr) {
+            record = strtok(line, ",");
+            if (record[0] == text) {
+                record = strtok(nullptr, ",");
+                fclose(fp);
+                fp = nullptr;
+                return record;
+            }
+        }
+        fclose(fp);
+        fp = nullptr;
+    }
 }
 
-std::wstring string_unicode(const std::string & str) {
-    std::wstring ret;
-    std::mbstate_t state = {};
-    const char *src = str.data();
-    size_t len = std::mbsrtowcs(nullptr, &src, 0, &state);
-    if (static_cast<size_t>(-1) != len) {
-        std::unique_ptr< wchar_t [] > buff(new wchar_t[len + 1]);
-        len = std::mbsrtowcs(buff.get(), &src, len, &state);
-        if (static_cast<size_t>(-1) != len) {
-            ret.assign(buff.get(), len);
-        }
+string utf8_encode(const string& text) {
+    char *chr = const_cast<char *>(text.c_str());
+    int i = 0;
+    string result;
+    while (chr[i] != '\0') {
+        result += search_csv(chr[i], 0);
+        i++;
     }
-    return ret;
+    return result;
 }
+
+string utf8_decode(string text) {
+
+}
+*/
+
+//int handShaking(SOCKET ClientSocket);
+//
+//int sayHello(SOCKET ClientSocket);
 
 unsigned __stdcall ThreadRecv(void *param) {
     char buf[262144];
@@ -112,11 +128,11 @@ unsigned __stdcall ThreadRecv(void *param) {
                     return -1;
                 }
             }*/
+            //printf("%s\n", buf);
             msg_decryption(buf);
             //string msg = UTF8_To_string();
-            basic_string<wchar_t> result = reinterpret_cast<basic_string<wchar_t> &&>(msg_result);
-            string msg = unicode_string(result);
-            printf("%s: %s\n", urName, msg.c_str());
+            string msg = msg_result;
+            std::cout << msg << std::endl;
             msg_result = "";
             // iStatus = RECV_OVER;
         } else {
@@ -137,21 +153,22 @@ unsigned __stdcall ThreadSend(void *param) {
         }
         printf("%s: ", myName);
         gets(input);
-        wstring msg = reinterpret_cast<basic_string<wchar_t> &&>(input);
-        printf(input);
-        printf("\n");
-        msg = string_unicode(input);
+        string msg = myName;
+        msg += ": ";
+        msg += input;
+        //unsigned char *result = nullptr;
         //std::cout << msg << std::endl;
         msg_result = "";
         char *buf = (char *) msg.c_str();
         msg_encryption(buf);
         // std::cout << "" << std::endl;
-        // std::cout << msg_result << std::endl;
-        char *msg_en = (char *) msg_result.c_str();
-        //char *msg_en = const_cast<char *>(msg.c_str());
-        //printf("%d\n", msg_result.length());
-        ret = send(*(SOCKET *) param, msg_en, msg_result.length(), 0);
-        //ret = send(*(SOCKET *) param, msg_en, sizeof(msg_en), 0);
+        //std::cout << msg_result << std::endl;
+        // char *msg_en = (char *) msg_result.c_str();
+        // printf("%s\n", msg_en);
+        // char *msg_en = const_cast<char *>(msg.c_str());
+        // printf("%d\n", msg_result.length());
+        // ret = send(*(SOCKET *) param, msg.c_str(), msg.length(), 0);
+        ret = send(*(SOCKET *) param, msg_result.c_str(), msg_result.length(), 0);
         if (ret == SOCKET_ERROR) {
             return 1;
         }
@@ -200,9 +217,23 @@ int ConnectChatServer() {
     }
     printf("Connect to chat server successfully.\n");
     printf("\t=> IP: %s, Port: %d\n\n", IP, htons(ServerAddr.sin_port));
-    printf("My name is: ");
+    printf("I am: ");
     gets(myName);
-    sayHello(ClientSocket);
+    //sayHello(ClientSocket);
+    string name;
+    name += myName;
+    printf("The room numer is: ");
+    string roompwd;
+    cin >> roompwd;
+    name += "-";
+    name += roompwd;
+    auto msg = name.c_str();
+    int sta = send(ClientSocket, msg, 1024, 0);
+    if (sta == SOCKET_ERROR) {
+        return 1;
+    }
+    char buf[128];
+    recv(ClientSocket, buf, sizeof(buf), 0);
     _beginthreadex(nullptr, 0, ThreadRecv, &ClientSocket, 0, nullptr);
     _beginthreadex(nullptr, 0, ThreadSend, &ClientSocket, 0, nullptr);
     for (int k = 0; k < 1000; k++) {
@@ -213,6 +244,7 @@ int ConnectChatServer() {
     return 0;
 }
 
+/*
 int sayHello(SOCKET ClientSocket) {
     string name;
     name += myName;
@@ -284,6 +316,7 @@ int handShaking(SOCKET ClientSocket) {
         return -1;
     }
 }
+*/
 
 int main() {
     ConnectChatServer();
