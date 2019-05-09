@@ -24,7 +24,7 @@
 // #define RECV_YET 0
 
 char myName[128] = {0};
-char urName[128] = {0};
+// char urName[128] = {0};
 // int iStatus = RECV_YET;
 
 /*
@@ -142,7 +142,6 @@ unsigned __stdcall ThreadRecv(void *param) {
     // return 0;
 }
 
-//发送数据
 unsigned __stdcall ThreadSend(void *param) {
     char input[1024];
     int ret = 0;
@@ -228,7 +227,7 @@ int ConnectChatServer() {
     name += "-";
     name += roompwd;
     auto msg = name.c_str();
-    int sta = send(ClientSocket, msg, 1024, 0);
+    int sta = send(ClientSocket, msg, sizeof(msg), 0);
     if (sta == SOCKET_ERROR) {
         return 1;
     }

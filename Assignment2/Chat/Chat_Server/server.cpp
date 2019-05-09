@@ -36,7 +36,7 @@ std::string pwd[2];
 
 typedef struct _Client {
     SOCKET sClient;
-    char buf[1024];
+    char buf[128];
     char userName[1024];
     char IP[20];
     UINT_PTR flag;
@@ -177,11 +177,11 @@ unsigned __stdcall ThreadAccept(void *param) {
             usrname = g_Client[i].userName;
             int pos = usrname.find('-');
             std::string record = usrname.substr(0, pos);
-            std::cout << record << std::endl;
+            // std::cout << record << std::endl;
             strcpy(g_Client[i].userName, record.c_str());
             record = usrname.substr(pos, usrname.length());
             pwd[i] = record;
-            std::cout << record << std::endl;
+            // std::cout << record << std::endl;
             if (!pwd[1].empty()) {
                 if (pwd[0] != pwd[1]) {
                     printf("Password not correct.\n");

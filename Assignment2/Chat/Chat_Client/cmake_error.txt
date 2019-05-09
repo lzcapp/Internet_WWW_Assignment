@@ -1,0 +1,13 @@
+====================[ Build | Chat_Client | Debug-MinGW ]=======================
+"C:\Program Files\CMake\bin\cmake.exe" --build C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\bin\Client --target Chat_Client -- -j 2
+Scanning dependencies of target Chat_Client
+[ 50%] Building CXX object CMakeFiles/Chat_Client.dir/client.cpp.obj
+In file included from C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\client.cpp:20:
+C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\des.cpp: In function 'int f(int*, const int*)':
+C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\des.cpp:161:1: warning: no return statement in function returning non-void [-Wreturn-type]
+ }
+ ^
+C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\des.cpp: In function 'int encryption(std::__cxx11::string, int)':
+C:\Users\rainy\Programming\UIC\Internet_WWW_Assignment\Assignment2\Chat\Chat_Client\des.cpp:361:1: warning: no return statement in function returning non-void [-Wreturn-type]
+ }
+ ^
