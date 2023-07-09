@@ -1,0 +1,29 @@
+body {
+    font-family: "Times New Roman";
+    text-align: center;
+    background-color: #07080C;
+    color: rgb(114, 255, 109);
+    margin-left: 10em;
+    margin-right: 10em;
+}
+
+h1 {
+    font-size: 3em;
+}
+
+#giveto {
+    font-size: 1.8em;
+    font-style: italic;
+    text-align: left;
+}
+
+#poetry {
+    font-size: 2.5em;
+    font-style: italic;
+}
+
+#author {
+    font-size: 1.8em;
+    font-style: italic;
+    text-align: right;
+}
