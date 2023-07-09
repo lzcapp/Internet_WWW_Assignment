@@ -6,15 +6,12 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 #include <winsock2.h>
-#include <winsock.h>
-#include <time.h>
 #include <stdio.h>
 #include <string.h>
 #include <direct.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <io.h>
 #include <ctype.h>
 
 
@@ -22,7 +19,7 @@
 #define SERV_PORT 8080
 
 #define MIN_BUF 128
-#define USER_ERROR -1
+#define USER_ERROR (-1)
 #define SERVER "Server: derpy\r\n"
 
 
@@ -68,7 +65,7 @@ struct fileType file_type[] =
                 {".ico",      "image/x-icon"},
                 {".css",      "text/css"},
                 {".js",       "application/javascript"},
-                {(char) NULL, (char) NULL}
+                {"", ""}
         };
 
 boolean isDynamic = false;
@@ -375,7 +372,7 @@ int customized_error_page(SOCKET sAccept) {
 // Send requested resources
 int sendFile(SOCKET sAccept, FILE *resource) {
     char send_buf[BUFF_SIZE];
-    size_t bytes_read = 0;
+    size_t bytes_read;
     while (1) {
         memset(send_buf, 0, sizeof(send_buf));       //缓存清0
         bytes_read = fread(send_buf, sizeof(char), sizeof(send_buf), resource);
@@ -409,9 +406,9 @@ int adDynamicPage(SOCKET sAccept) {
     char result[100];
     matchXMLClass(clientAddr, result);
     if (result[0] == '0') {
-        strcat(response, "<div id=\"advertisement\"><img src=\"http://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2018/02_GS_admission-cn.jpg\" width=\"100%\"></div><br/>");
+        strcat(response, "<div id=\"advertisement\"><img src=\"https://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2018/02_GS_admission-cn.jpg\" width=\"100%\"></div><br/>");
     } else if (result[0] == '1') {
-        strcat(response, "<div id=\"advertisement\"><img src=\"http://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2019/2019_Guangdong_Admission_banner.jpg\" width=\"100%\"></div><br/>");
+        strcat(response, "<div id=\"advertisement\"><img src=\"https://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2019/2019_Guangdong_Admission_banner.jpg\" width=\"100%\"></div><br/>");
     }
     strcat(response, "<p>Old age should burn and rave at close of day;</p><br/>");
     strcat(response, "<p>Rage, rage against the dying of the light.</p><br/>");
@@ -473,7 +470,7 @@ int sendDynamicPage(SOCKET sAccept) {
     strcat(response, "<br/>&emsp;&emsp;· White List: ");
     strcat(response, isWhite);
     strcat(response,
-           "<br/><br/><img src=\"http://www.zhmb.org.cn/jeecms/static/common/images/sj4.jpg\" width=\"100%\">");
+           "<br/><br/><img src=\"https://www.zhmb.org.cn/jeecms/static/common/images/sj4.jpg\" width=\"100%\">");
     strcat(response, "</body>");
     if (SOCKET_ERROR == send(sAccept, response, len, 0)) {
         printf("send() Failed:%d\n", WSAGetLastError());
