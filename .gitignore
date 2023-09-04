@@ -483,6 +483,7 @@ ASALocalRun/
 WebServer/cmake-build-debug/Makefile
 
 **/cmake-build-debug/**
-**/cmake-build-debug-mingw/**
-**/cmake-build-release-mingw/**
+**/cmake-build-release/**
+**/cmake-build-debug-**/**
+**/cmake-build-release-**/**
 **/cmake-build-default-remote-host/**
