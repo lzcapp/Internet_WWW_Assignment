@@ -16,7 +16,7 @@
 
 
 #define BUFF_SIZE 1024
-#define SERV_PORT 8080
+#define SERV_PORT 80
 
 #define MIN_BUF 128
 #define USER_ERROR (-1)
@@ -56,16 +56,16 @@ struct fileType {
 
 struct fileType file_type[] =
         {
-                {".html",     "text/html"},
-                {".gif",      "image/gif"},
-                {".jpg",      "image/jpg"},
-                {".png",      "image/png"},
-                {".mp3",      "audio/mp3"},
-                {".mp4",      "video/mp4"},
-                {".ico",      "image/x-icon"},
-                {".css",      "text/css"},
-                {".js",       "application/javascript"},
-                {"", ""}
+                {".html", "text/html"},
+                {".gif",  "image/gif"},
+                {".jpg",  "image/jpg"},
+                {".png",  "image/png"},
+                {".mp3",  "audio/mp3"},
+                {".mp4",  "video/mp4"},
+                {".ico",  "image/x-icon"},
+                {".css",  "text/css"},
+                {".js",   "application/javascript"},
+                {"",      ""}
         };
 
 boolean isDynamic = false;
@@ -406,9 +406,11 @@ int adDynamicPage(SOCKET sAccept) {
     char result[100];
     matchXMLClass(clientAddr, result);
     if (result[0] == '0') {
-        strcat(response, "<div id=\"advertisement\"><img src=\"https://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2018/02_GS_admission-cn.jpg\" width=\"100%\"></div><br/>");
+        strcat(response,
+               "<div id=\"advertisement\"><img src=\"https://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2018/02_GS_admission-cn.jpg\" width=\"100%\"></div><br/>");
     } else if (result[0] == '1') {
-        strcat(response, "<div id=\"advertisement\"><img src=\"https://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2019/2019_Guangdong_Admission_banner.jpg\" width=\"100%\"></div><br/>");
+        strcat(response,
+               "<div id=\"advertisement\"><img src=\"https://uic.edu.hk/upload/channel/Registered/mproe/Bannersposters/2019/2019_Guangdong_Admission_banner.jpg\" width=\"100%\"></div><br/>");
     }
     strcat(response, "<p>Old age should burn and rave at close of day;</p><br/>");
     strcat(response, "<p>Rage, rage against the dying of the light.</p><br/>");
