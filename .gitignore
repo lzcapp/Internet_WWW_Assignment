@@ -481,3 +481,5 @@ ASALocalRun/
 .localhistory/
 *.cbp
 WebServer/cmake-build-debug/Makefile
+
+*/cmake-build-debug/*
