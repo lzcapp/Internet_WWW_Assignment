@@ -482,4 +482,4 @@ ASALocalRun/
 *.cbp
 WebServer/cmake-build-debug/Makefile
 
-*/cmake-build-debug/*
+**/cmake-build-debug/**
